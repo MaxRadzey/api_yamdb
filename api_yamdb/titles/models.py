@@ -54,7 +54,7 @@ class Titles(models.Model):
 
 
 class Reviews(models.Model):
-    text = models.TextField('Текст отзыва')
+    text = models.IntegerField('Отзыв - число', min_value=0, max_value=10)
     title = models.ForeignKey(
         Titles, on_delete=models.CASCADE, verbose_name='Произведение'
     )
