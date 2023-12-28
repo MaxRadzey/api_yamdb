@@ -51,3 +51,31 @@ class Titles(models.Model):
 
     def __str__(self):
         return self.name[:SYMBOL_LIMIT]
+
+
+class Reviews(models.Model):
+    text = models.IntegerField('Отзыв - число', min_value=0, max_value=10)
+    title = models.ForeignKey(
+        Titles, on_delete=models.CASCADE, verbose_name='Произведение'
+    )
+
+    class Meta:
+        verbose_name = 'Отзыв'
+        verbose_name_plural = 'Отзывы'
+
+    def __str__(self):
+        return self.name[:SYMBOL_LIMIT]
+
+
+class Comments(models.Model):
+    text = models.TextField('Текст комментария')
+    review = models.ForeignKey(
+        Reviews, on_delete=models.CASCADE, verbose_name='Отзыв'
+    )
+
+    class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
+    def __str__(self):
+        return self.name[:SYMBOL_LIMIT]
