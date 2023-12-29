@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 from titles.constants import SYMBOL_LIMIT
 
@@ -44,6 +45,7 @@ class Titles(models.Model):
         blank=True, null=True,
         verbose_name='Категория'
     )
+    rating = models.DecimalField()
 
     class Meta:
         verbose_name = 'Произведение'
@@ -54,17 +56,23 @@ class Titles(models.Model):
 
 
 class Reviews(models.Model):
-    text = models.IntegerField('Отзыв - число', min_value=0, max_value=10)
+    grade = models.IntegerField(
+        default=1,
+        validators=[
+            MaxValueValidator(10),
+            MinValueValidator(1)
+        ]
+    )
     title = models.ForeignKey(
         Titles, on_delete=models.CASCADE, verbose_name='Произведение'
+    )
+    author = models.ForeignKey(
+        'User', on_delete=models.CASCADE, vebrose_name='Автор'
     )
 
     class Meta:
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
-
-    def __str__(self):
-        return self.name[:SYMBOL_LIMIT]
 
 
 class Comments(models.Model):
@@ -72,10 +80,13 @@ class Comments(models.Model):
     review = models.ForeignKey(
         Reviews, on_delete=models.CASCADE, verbose_name='Отзыв'
     )
+    author = models.ForeignKey(
+        'User', on_delete=models.CASCADE, vebrose_name='Автор'
+    )
 
     class Meta:
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
 
     def __str__(self):
-        return self.name[:SYMBOL_LIMIT]
+        return self.text[:SYMBOL_LIMIT]
