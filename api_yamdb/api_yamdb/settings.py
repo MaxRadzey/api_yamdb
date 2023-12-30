@@ -90,6 +90,12 @@ AUTH_PASSWORD_VALIDATORS = [
 # Users
 AUTH_USER_MODEL = 'users.DBUser'
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
 
 # Internationalization
 
