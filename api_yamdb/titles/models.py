@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
+from users.models import DBUser
 from titles.constants import SYMBOL_LIMIT
 
 
@@ -45,7 +46,12 @@ class Titles(models.Model):
         blank=True, null=True,
         verbose_name='Категория'
     )
-    rating = models.DecimalField()
+    rating = models.IntegerField(
+        'Рейтинг произведения', null=True, validators=[
+            MaxValueValidator(10),
+            MinValueValidator(1)
+        ]
+    )
 
     class Meta:
         verbose_name = 'Произведение'
@@ -56,18 +62,22 @@ class Titles(models.Model):
 
 
 class Reviews(models.Model):
-    grade = models.IntegerField(
+    text = models.TextField('Текст отзыва',)
+    author = models.ForeignKey(
+        DBUser, on_delete=models.CASCADE, verbose_name='Автор'
+    )
+    score = models.IntegerField(
         default=1,
         validators=[
             MaxValueValidator(10),
             MinValueValidator(1)
         ]
     )
+    pub_date = models.DateTimeField(
+        'Дата публикации', auto_now_add=True, db_index=True
+    )
     title = models.ForeignKey(
         Titles, on_delete=models.CASCADE, verbose_name='Произведение'
-    )
-    author = models.ForeignKey(
-        'User', on_delete=models.CASCADE, vebrose_name='Автор'
     )
 
     class Meta:
@@ -76,12 +86,15 @@ class Reviews(models.Model):
 
 
 class Comments(models.Model):
-    text = models.TextField('Текст комментария')
-    review = models.ForeignKey(
-        Reviews, on_delete=models.CASCADE, verbose_name='Отзыв'
-    )
+    text = models.TextField('Текст комментария',)
     author = models.ForeignKey(
-        'User', on_delete=models.CASCADE, vebrose_name='Автор'
+        DBUser, on_delete=models.CASCADE, verbose_name='Автор'
+    )
+    pub_date = models.DateTimeField(
+        'Дата публикации', auto_now_add=True, db_index=True
+    )
+    review = models.ForeignKey(
+        Reviews, on_delete=models.CASCADE, verbose_name='Автор'
     )
 
     class Meta:
