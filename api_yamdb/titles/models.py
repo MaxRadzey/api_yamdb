@@ -1,7 +1,10 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from titles.constants import SYMBOL_LIMIT
+
+User = get_user_model()
 
 
 class Categories(models.Model):
@@ -45,7 +48,11 @@ class Titles(models.Model):
         blank=True, null=True,
         verbose_name='Категория'
     )
-    rating = models.DecimalField()
+    rating = models.DecimalField(
+        'Рейтинг произведения',
+        max_digits=3, decimal_places=2,
+        blank=True, null=True
+    )
 
     class Meta:
         verbose_name = 'Произведение'
@@ -67,7 +74,8 @@ class Reviews(models.Model):
         Titles, on_delete=models.CASCADE, verbose_name='Произведение'
     )
     author = models.ForeignKey(
-        'User', on_delete=models.CASCADE, vebrose_name='Автор'
+        User, on_delete=models.CASCADE,
+        verbose_name='Автор'
     )
 
     class Meta:
@@ -81,7 +89,7 @@ class Comments(models.Model):
         Reviews, on_delete=models.CASCADE, verbose_name='Отзыв'
     )
     author = models.ForeignKey(
-        'User', on_delete=models.CASCADE, vebrose_name='Автор'
+        User, on_delete=models.CASCADE, verbose_name='Автор'
     )
 
     class Meta:
