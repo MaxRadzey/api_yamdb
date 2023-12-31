@@ -15,3 +15,4 @@ class DBUser(AbstractUser):
 
     bio = models.TextField(max_length=500, blank=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=USER)
+    confirmation_code = models.CharField(max_length=6, blank=True)

@@ -14,7 +14,7 @@ def send_confirmation_email(user):
     confirmation_code = ''.join(
         random.choices(
             string.ascii_uppercase + string.digits,
-            k=20
+            k=6
         )
     )
     user.confirmation_code = confirmation_code
