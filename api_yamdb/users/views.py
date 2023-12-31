@@ -6,11 +6,27 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.utils import send_confirmation_email
 from .serializers import (
+    CreateUserSerializer,
     SignUpSerializer,
     TokenSerializer,
 )
+from api_yamdb.permissions import SuperUser
 
 User = get_user_model()
+
+
+class CreateUserView(views.APIView):
+    serializer_class = CreateUserSerializer
+    permission_classes = [SuperUser,]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        User.objects.create_user(**serializer.validated_data)
+        return Response(
+            {'detail': 'Пользователь создан.'},
+            status=status.HTTP_201_CREATED
+        )
 
 
 class SignUpView(views.APIView):
@@ -19,8 +35,7 @@ class SignUpView(views.APIView):
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = User.objects.create_user(**serializer.validated_data)
+        user = User.objects.get(username=serializer.initial_data['username'])
         send_confirmation_email(user)
         return Response(
             {'detail': 'Confirmation code sent to your email'},
