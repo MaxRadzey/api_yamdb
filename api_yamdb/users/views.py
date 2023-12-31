@@ -6,15 +6,15 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.utils import send_confirmation_email
 from .serializers import (
-    DBUserTokenObtainPairSerializer,
-    RegisterSerializer
+    SignUpSerializer,
+    TokenSerializer,
 )
 
 User = get_user_model()
 
 
 class SignUpView(views.APIView):
-    serializer_class = DBUserTokenObtainPairSerializer
+    serializer_class = SignUpSerializer
     permission_classes = [AllowAny,]
 
     def post(self, request, *args, **kwargs):
@@ -29,7 +29,7 @@ class SignUpView(views.APIView):
 
 
 class TokenView(views.APIView):
-    serializer_class = RegisterSerializer,
+    serializer_class = TokenSerializer
     permission_classes = [AllowAny,]
 
     def post(self, request, *args, **kwargs):
