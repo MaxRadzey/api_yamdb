@@ -5,11 +5,11 @@ from rest_framework.validators import UniqueValidator
 User = get_user_model()
 
 
-class SignUpSerializer(serializers.ModelSerializer):
+class CreateUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'username', 'role', 'password')
+        fields = ('email', 'username', 'role', 'bio')
         extra_kwargs = {
             'username': {'required': True},
             'email': {
@@ -17,7 +17,18 @@ class SignUpSerializer(serializers.ModelSerializer):
                 'validators': [UniqueValidator(queryset=User.objects.all())]
             },
             'role': {'required': False},
-            'password': {'write_only': True, 'required': False},
+            'bio': {'required': False},
+        }
+
+
+class SignUpSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('email', 'username')
+        extra_kwargs = {
+            'username': {'required': True},
+            'email': {'required': True},
         }
 
 
