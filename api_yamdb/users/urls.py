@@ -5,11 +5,11 @@ urlpatterns = [
     path(
         'signup/',
         SignUpView.as_view(),
-        name='token_obtain_pair'
+        name='signup'
     ),
     path(
         'token/',
         TokenView.as_view(),
-        name='token_obtain_pair'
+        name='token'
     ),
 ]
