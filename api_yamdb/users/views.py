@@ -10,7 +10,7 @@ from .serializers import (
     SignUpSerializer,
     TokenSerializer,
 )
-from api_yamdb.permissions import SuperUser
+from api.permissions import SuperUser
 
 User = get_user_model()
 
