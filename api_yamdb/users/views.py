@@ -22,11 +22,22 @@ class CreateUserView(views.APIView):
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        User.objects.create_user(**serializer.validated_data)
-        return Response(
-            {'detail': 'Пользователь создан.'},
-            status=status.HTTP_201_CREATED
-        )
+        if not serializer.validated_data:
+            return Response(
+                {'detail': 'Запрос не может быть пустым.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if 'username' in serializer.validated_data:
+            User.objects.create_user(**serializer.validated_data)
+            return Response(
+                {'detail': 'Пользователь создан.'},
+                status=status.HTTP_201_CREATED
+            )
+        else:
+            return Response(
+                {'detail': 'Поле username обязательно.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class SignUpView(views.APIView):

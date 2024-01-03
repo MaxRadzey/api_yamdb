@@ -6,19 +6,15 @@ User = get_user_model()
 
 
 class CreateUserSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(
+        required=True,
+        validators=[UniqueValidator(queryset=User.objects.all())]
+    )
+    username = serializers.CharField(required=True)
 
     class Meta:
         model = User
-        fields = ('email', 'username', 'role', 'bio')
-        extra_kwargs = {
-            'username': {'required': True},
-            'email': {
-                'required': True,
-                'validators': [UniqueValidator(queryset=User.objects.all())]
-            },
-            'role': {'required': False},
-            'bio': {'required': False},
-        }
+        fields = ('email', 'username')
 
 
 class SignUpSerializer(serializers.ModelSerializer):
