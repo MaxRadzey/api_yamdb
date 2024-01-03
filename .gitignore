@@ -149,3 +149,6 @@ dmypy.json
 media/
 
 mypy.ini
+
+# папки мэйл-бэкэнда
+sent_emails/
