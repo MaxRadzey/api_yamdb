@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -20,7 +22,7 @@ class Categories(models.Model):
         return self.name[:SYMBOL_LIMIT]
 
 
-class Generes(models.Model):
+class Genres(models.Model):
 
     name = models.CharField('Название жанра', max_length=256)
     slug = models.SlugField('Слаг жанра', unique=True, max_length=50)
@@ -36,16 +38,17 @@ class Generes(models.Model):
 class Titles(models.Model):
 
     name = models.CharField('Название произведения', max_length=256)
-    year = models.DateTimeField('Дата выхода произведения',)
-    description = models.TextField('Описание произведения',)
-    genre = models.ForeignKey(
-        Generes, on_delete=models.SET_NULL,
-        blank=True, null=True,
-        verbose_name='Жанр'
+    year = models.IntegerField(
+        'Дата выхода произведения',
+        validators=[
+            MaxValueValidator(datetime.now().year),
+            MinValueValidator(0)
+        ]
     )
+    description = models.TextField('Описание произведения', blank=True)
+    genre = models.ManyToManyField(Genres, verbose_name='Жанр')
     category = models.ForeignKey(
-        Categories, on_delete=models.SET_NULL,
-        blank=True, null=True,
+        Categories, on_delete=models.CASCADE,
         verbose_name='Категория'
     )
     rating = models.IntegerField(
