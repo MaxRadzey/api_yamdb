@@ -1,8 +1,10 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
-from users.models import DBUser
 from titles.constants import SYMBOL_LIMIT
+
+User = get_user_model()
 
 
 class Categories(models.Model):
@@ -64,7 +66,7 @@ class Titles(models.Model):
 class Reviews(models.Model):
     text = models.TextField('Текст отзыва',)
     author = models.ForeignKey(
-        DBUser, on_delete=models.CASCADE, verbose_name='Автор'
+        User, on_delete=models.CASCADE, verbose_name='Автор'
     )
     score = models.IntegerField(
         default=1,
@@ -88,13 +90,13 @@ class Reviews(models.Model):
 class Comments(models.Model):
     text = models.TextField('Текст комментария',)
     author = models.ForeignKey(
-        DBUser, on_delete=models.CASCADE, verbose_name='Автор'
+        User, on_delete=models.CASCADE, verbose_name='Автор'
     )
     pub_date = models.DateTimeField(
         'Дата публикации', auto_now_add=True, db_index=True
     )
     review = models.ForeignKey(
-        Reviews, on_delete=models.CASCADE, verbose_name='Автор'
+        Reviews, on_delete=models.CASCADE, verbose_name='Отзыв'
     )
 
     class Meta:
