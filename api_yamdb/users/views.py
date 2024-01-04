@@ -1,5 +1,7 @@
 from django.contrib.auth import get_user_model
-from rest_framework import status, views
+from django.shortcuts import get_object_or_404
+from http import HTTPStatus
+from rest_framework import views
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -10,48 +12,76 @@ from .serializers import (
     SignUpSerializer,
     TokenSerializer,
 )
-from api.permissions import SuperUser
+# from api.permissions import IsAdminUserOrSuperUser
 
 User = get_user_model()
 
 
 class CreateUserView(views.APIView):
+    """Создание пользователя администратором."""
     serializer_class = CreateUserSerializer
-    permission_classes = [SuperUser,]
+    permission_classes = [AllowAny,]
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        if not serializer.validated_data:
-            return Response(
-                {'detail': 'Запрос не может быть пустым.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        if 'username' in serializer.validated_data:
-            User.objects.create_user(**serializer.validated_data)
-            return Response(
-                {'detail': 'Пользователь создан.'},
-                status=status.HTTP_201_CREATED
-            )
-        else:
-            return Response(
-                {'detail': 'Поле username обязательно.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        user = User.objects.create_user(**serializer.validated_data)
+        return Response(
+            {
+                'username': user.username,
+                'email': user.email},
+            status=HTTPStatus.CREATED
+        )
 
 
 class SignUpView(views.APIView):
+    """Самостоятельная регистрация нового пользователя."""
     serializer_class = SignUpSerializer
     permission_classes = [AllowAny,]
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
-        user = User.objects.get(username=serializer.initial_data['username'])
-        send_confirmation_email(user)
-        return Response(
-            {'detail': 'Confirmation code sent to your email'},
-            status=status.HTTP_200_OK
-        )
+        if serializer.is_valid():
+            username = serializer.validated_data['username']
+            email = serializer.validated_data['email']
+            user = User.objects.filter(email=email).first()
+            if user:
+                if user.username != username:
+                    return Response(
+                        {'detail': 'Такой email уже зарегистрирован'},
+                        status=HTTPStatus.BAD_REQUEST
+                    )
+                send_confirmation_email(user)
+                return Response(
+                    {
+                        'username': user.username,
+                        'email': user.email
+                    },
+                    status=HTTPStatus.OK
+                )
+            elif User.objects.filter(username=username).exists():
+                return Response(
+                    {'detail': 'Такой username уже зарегистрирован'},
+                    status=HTTPStatus.BAD_REQUEST
+                )
+            else:
+                user = User.objects.create(
+                    username=username,
+                    email=email
+                )
+                send_confirmation_email(user)
+                return Response(
+                    {
+                        'username': user.username,
+                        'email': user.email
+                    },
+                    status=HTTPStatus.OK
+                )
+        else:
+            return Response(
+                serializer.errors,
+                status=HTTPStatus.BAD_REQUEST
+            )
 
 
 class TokenView(views.APIView):
@@ -61,16 +91,18 @@ class TokenView(views.APIView):
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = User.objects.filter(
-            **serializer.validated_data
-        ).first()
-        if not user:
+        username = serializer.validated_data['username']
+        confirmation_code = serializer.validated_data['confirmation_code']
+        user = get_object_or_404(User, username=username)
+
+        if user.confirmation_code != confirmation_code:
             return Response(
-                {'detail': 'Invalid username or confirmation code'},
-                status=status.HTTP_400_BAD_REQUEST
+                {'detail': 'Неверный код подтверждения'},
+                status=HTTPStatus.BAD_REQUEST
             )
+
         refresh = RefreshToken.for_user(user)
         return Response(
             {'token': str(refresh.access_token)},
-            status=status.HTTP_200_OK
+            status=HTTPStatus.OK
         )
