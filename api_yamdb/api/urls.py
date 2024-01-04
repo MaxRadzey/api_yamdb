@@ -3,7 +3,7 @@ from rest_framework import routers
 
 from api.views import (
     CategoriesViewSet,
-    GeneresViewSet,
+    GenresViewSet,
     TitlesViewSet,
     ReviewsViewSet,
     CommentsViewSet
@@ -22,7 +22,7 @@ router_v1.register(
     basename='reviews'
 )
 router_v1.register('categories', CategoriesViewSet, basename='categories')
-router_v1.register('genres', GeneresViewSet, basename='genres')
+router_v1.register('genres', GenresViewSet, basename='genres')
 router_v1.register('titles', TitlesViewSet, basename='titles')
 
 api_v1_patterns = [

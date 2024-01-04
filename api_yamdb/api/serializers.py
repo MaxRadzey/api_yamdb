@@ -1,6 +1,9 @@
-from rest_framework import serializers
+from datetime import datetime
 
-from titles.models import Categories, Generes, Titles, Reviews, Comments
+from rest_framework import serializers
+from rest_framework.validators import ValidationError
+
+from titles.models import Categories, Genres, Titles, Reviews, Comments
 
 
 class CategoriesSerializer(serializers.ModelSerializer):
@@ -10,22 +13,39 @@ class CategoriesSerializer(serializers.ModelSerializer):
         model = Categories
 
 
-class GeneresSerializer(serializers.ModelSerializer):
+class GenresSerializer(serializers.ModelSerializer):
     """Сериализатор для жанров."""
     class Meta:
         fields = ('name', 'slug')
-        model = Generes
+        model = Genres
 
 
 class TitlesSerializer(serializers.ModelSerializer):
     """Сериализатор для произведений."""
     rating = ...
-    genere = ...
-    category = ...
+    genre = serializers.SlugRelatedField(
+        many=True,
+        queryset=Genres.objects.all(),
+        slug_field='slug'
+    )
+    category = serializers.SlugRelatedField(
+        queryset=Categories.objects.all(),
+        slug_field='slug'
+    )
 
     class Meta:
-        fields = '__all__'
+        fields = (
+            'id', 'name', 'year', 'rating',
+            'description', 'genre', 'category'
+        )
         model = Titles
+
+        def validate_year(self, value):
+            if value < 0 and value > datetime.now().year:
+                raise ValidationError(
+                    'Укажите верную дату.'
+                )
+            return value
 
 
 class ReviewsSerializer(serializers.ModelSerializer):

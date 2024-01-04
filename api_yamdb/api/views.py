@@ -3,30 +3,39 @@ from rest_framework.pagination import LimitOffsetPagination
 from django.shortcuts import get_object_or_404
 
 from api.serializers import (
-    CategoriesSerializer, GeneresSerializer,
+    CategoriesSerializer, GenresSerializer,
     TitlesSerializer, CommentsSerializer,
     ReviewsSerializer
 )
-from titles.models import Categories, Generes, Titles, Comments, Reviews
-from api.permissions import IsAuthorOrReadOnlyPermission
+from titles.models import Categories, Genres, Titles, Comments, Reviews
+from api.permissions import IsAuthorOrReadOnlyPermission, SuperUser
 
 
 class CategoriesViewSet(viewsets.ModelViewSet):
+    """Вьюсет для категорий."""
 
     queryset = Categories.objects.all()
     serializer_class = CategoriesSerializer
+    permission_classes = (SuperUser,)
+    pagination_class = LimitOffsetPagination
 
 
-class GeneresViewSet(viewsets.ModelViewSet):
+class GenresViewSet(viewsets.ModelViewSet):
+    """Вьюсет для жанров."""
 
-    queryset = Generes.objects.all()
-    serializer_class = GeneresSerializer
+    queryset = Genres.objects.all()
+    serializer_class = GenresSerializer
+    permission_classes = (SuperUser,)
+    pagination_class = LimitOffsetPagination
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
+    """Вьюсет для произведений."""
 
     queryset = Titles.objects.all()
     serializer_class = TitlesSerializer
+    permission_classes = (SuperUser,)
+    pagination_class = LimitOffsetPagination
 
 
 class ReviewsViewSet(viewsets.ModelViewSet):
