@@ -8,7 +8,7 @@ from api.views import (
     ReviewsViewSet,
     CommentsViewSet
 )
-from users.views import CreateUserView
+from users.views import UserView, CurrentUserView
 
 router_v1 = routers.DefaultRouter()
 router_v1.register(
@@ -24,14 +24,12 @@ router_v1.register(
 router_v1.register(r'categories(/(?P<categories_slug>\w+))*', CategoriesViewSet, basename='categories')
 router_v1.register(r'genres(/(?P<genres_slug>\w+))*', GenresViewSet, basename='genres')
 router_v1.register('titles', TitlesViewSet, basename='titles')
+router_v1.register('users', UserView, basename='users')
+
 
 api_v1_patterns = [
+    path('users/me/', CurrentUserView.as_view(), name='current_user'),
     path('', include(router_v1.urls)),
-    path(
-        'users/',
-        CreateUserView.as_view(),
-        name='create_user'
-    ),
     path('auth/', include('users.urls')),
 ]
 
