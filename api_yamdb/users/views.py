@@ -12,7 +12,7 @@ from .serializers import (
     SignUpSerializer,
     TokenSerializer,
 )
-# from api.permissions import IsAdminUserOrSuperUser
+from api.permissions import IsAdmin
 
 User = get_user_model()
 
@@ -20,7 +20,7 @@ User = get_user_model()
 class CreateUserView(views.APIView):
     """Создание пользователя администратором."""
     serializer_class = CreateUserSerializer
-    permission_classes = [AllowAny,]
+    permission_classes = [IsAdmin,]
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)

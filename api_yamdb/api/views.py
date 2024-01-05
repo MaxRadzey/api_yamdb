@@ -1,5 +1,6 @@
 from rest_framework import viewsets, filters
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -9,11 +10,23 @@ from api.serializers import (
     ReviewsSerializer, TitlesCreateSerializer
 )
 from titles.models import Categories, Genres, Titles, Comments, Reviews
-from api.permissions import IsAuthorOrReadOnlyPermission, IsAdminOrReadOnly
+from api.permissions import IsAuthorOrReadOnlyPermission, IsAdminOrReadOnly, IsAdmin, IsModerator, IsAuthorOrReadOnly
 from .filters import TitlesFilter
 
 
-class CategoriesViewSet(viewsets.ModelViewSet):
+class BaseViewSet(viewsets.ModelViewSet):
+    """Базовый вьюсет."""
+    pagination_class = LimitOffsetPagination
+
+    def get_permissions(self):
+        if self.request.method in ['POST', 'DELETE', 'PUT', 'PATCH']:
+            self.permission_classes = [IsAdmin]
+        else:
+            self.permission_classes = [IsAuthenticatedOrReadOnly]
+        return super(BaseViewSet, self).get_permissions()
+
+
+class CategoriesViewSet(BaseViewSet):
     """Вьюсет для категорий."""
 
     queryset = Categories.objects.all()
@@ -23,7 +36,7 @@ class CategoriesViewSet(viewsets.ModelViewSet):
     search_fields = ('name',)
 
 
-class GenresViewSet(viewsets.ModelViewSet):
+class GenresViewSet(BaseViewSet):
     """Вьюсет для жанров."""
 
     queryset = Genres.objects.all()
@@ -53,8 +66,16 @@ class TitlesViewSet(viewsets.ModelViewSet):
 class ReviewsViewSet(viewsets.ModelViewSet):
     """Вьюсет для отзывов."""
     serializer_class = ReviewsSerializer
-    permission_classes = (IsAuthorOrReadOnlyPermission,)
     pagination_class = LimitOffsetPagination
+
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'PATCH']:
+            self.permission_classes = [IsAuthorOrReadOnly]
+        elif self.request.method == 'DELETE':
+            self.permission_classes = [IsModerator | IsAdmin]
+        else:
+            self.permission_classes = [IsAuthenticatedOrReadOnly]
+        return super(ReviewsViewSet, self).get_permissions()
 
     def get_queryset(self):
         """Получение всех отзывов или конкретного отзыва."""
@@ -79,7 +100,15 @@ class ReviewsViewSet(viewsets.ModelViewSet):
 class CommentsViewSet(viewsets.ModelViewSet):
     """Вьюсет для комментариев."""
     serializer_class = CommentsSerializer
-    permission_classes = (IsAuthorOrReadOnlyPermission,)
+
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'PATCH']:
+            self.permission_classes = [IsAuthorOrReadOnly]
+        elif self.request.method == 'DELETE':
+            self.permission_classes = [IsModerator | IsAdmin]
+        else:
+            self.permission_classes = [IsAuthenticatedOrReadOnly]
+        return super(ReviewsViewSet, self).get_permissions()
 
     def get_queryset(self):
         """Получение всех комментариев или конкретного комментария."""

@@ -1,35 +1,33 @@
 from rest_framework import permissions
 
 
-class IsAuthorOrReadOnlyPermission(permissions.BasePermission):
+class IsAuthorOrReadOnly(permissions.IsAuthenticatedOrReadOnly):
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
 
+        # Check if the user is the author of the object
+        return obj.author == request.user
+
+
+class IsModerator(IsAuthorOrReadOnly):
     def has_permission(self, request, view):
-        if request.method == 'retrieve':
-            return request.method in permissions.SAFE_METHODS
-        return (
-            request.method in permissions.SAFE_METHODS
-            or request.user.is_authenticated
-        )
+        return request.user.is_authenticated and request.user.role == 'moderator'
 
     def has_object_permission(self, request, view, obj):
-        return (
-            obj.author == request.user
-            or request.method in permissions.SAFE_METHODS
-        )
+        # Moderators can edit or delete any object
+        return True
 
 
-class IsAdminUserOrSuperUser(permissions.BasePermission):
+class IsAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
-        return bool(
-            request.user and
-            (request.user.is_staff or request.user.is_superuser)
-        )
+        # Admins and superusers have all permissions
+        return request.user.is_authenticated and (request.user.role == 'admin' or request.user.is_superuser)
 
     def has_object_permission(self, request, view, obj):
-        return bool(
-            request.user and
-            (request.user.is_staff or request.user.is_superuser)
-        )
+
+        # Admins and superusers can edit or delete any object
+        return True
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
