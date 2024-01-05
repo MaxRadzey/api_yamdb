@@ -1,4 +1,5 @@
 from datetime import datetime
+import re
 
 from rest_framework import serializers
 from rest_framework.validators import ValidationError
@@ -12,6 +13,11 @@ class CategoriesSerializer(serializers.ModelSerializer):
         fields = ('name', 'slug')
         model = Categories
 
+    def validate_slug(self, value):
+        reg_slug = '^[-a-zA-Z0-9_]+$'
+        if re.match(reg_slug, value):
+            return value
+
 
 class GenresSerializer(serializers.ModelSerializer):
     """Сериализатор для жанров."""
@@ -19,9 +25,28 @@ class GenresSerializer(serializers.ModelSerializer):
         fields = ('name', 'slug')
         model = Genres
 
+    def validate_slug(self, value):
+        reg_slug = '^[-a-zA-Z0-9_]+$'
+        if re.match(reg_slug, value):
+            return value
 
-class TitlesSerializer(serializers.ModelSerializer):
-    """Сериализатор для произведений."""
+
+class TitlesViewSerializer(serializers.ModelSerializer):
+    """Сериализатор для просмотра произведений."""
+
+    genre = GenresSerializer(many=True, read_only=True)
+    category = CategoriesSerializer(read_only=True)
+
+    class Meta:
+        fields = (
+            'id', 'name', 'year', 'rating',
+            'description', 'genre', 'category'
+        )
+        model = Titles
+
+
+class TitlesCreateSerializer(serializers.ModelSerializer):
+    """Сериализатор для создание произведений."""
     rating = ...
     genre = serializers.SlugRelatedField(
         many=True,
