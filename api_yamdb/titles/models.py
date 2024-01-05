@@ -11,7 +11,7 @@ User = get_user_model()
 
 class Categories(models.Model):
 
-    name = models.CharField('Название категории', max_length=256)
+    name = models.CharField('Название категории', max_length=256, unique=True)
     slug = models.SlugField('Слаг категории', unique=True, max_length=50)
 
     class Meta:
@@ -24,7 +24,7 @@ class Categories(models.Model):
 
 class Genres(models.Model):
 
-    name = models.CharField('Название жанра', max_length=256)
+    name = models.CharField('Название жанра', max_length=256, unique=True)
     slug = models.SlugField('Слаг жанра', unique=True, max_length=50)
 
     class Meta:

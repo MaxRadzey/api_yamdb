@@ -25,5 +25,22 @@ class IsAdmin(permissions.BasePermission):
         return request.user.is_authenticated and (request.user.role == 'admin' or request.user.is_superuser)
 
     def has_object_permission(self, request, view, obj):
+
         # Admins and superusers can edit or delete any object
         return True
+
+
+class IsAdminOrReadOnly(permissions.BasePermission):
+    """Класс ограничения прав пользователя."""
+
+    def has_permission(self, request, view):
+        """Возвращает True если пользователь admin или безопасный метод."""
+        if request.user.is_anonymous:
+            return request.method in permissions.SAFE_METHODS
+        return request.user.role == 'admin'
+
+    def has_object_permission(self, request, view, obj):
+        """Возвращает True если пользователь admin"""
+        if request.user.is_anonymous:
+            return request.method in permissions.SAFE_METHODS
+        return request.user.role == 'admin'
