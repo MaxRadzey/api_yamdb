@@ -100,6 +100,7 @@ class ReviewsViewSet(viewsets.ModelViewSet):
 class CommentsViewSet(viewsets.ModelViewSet):
     """Вьюсет для комментариев."""
     serializer_class = CommentsSerializer
+    pagination_class = LimitOffsetPagination
 
     def get_permissions(self):
         if self.request.method in ['PUT', 'PATCH']:
@@ -108,7 +109,7 @@ class CommentsViewSet(viewsets.ModelViewSet):
             self.permission_classes = [IsModerator | IsAdmin]
         else:
             self.permission_classes = [IsAuthenticatedOrReadOnly]
-        return super(ReviewsViewSet, self).get_permissions()
+        return super(CommentsViewSet, self).get_permissions()
 
     def get_queryset(self):
         """Получение всех комментариев или конкретного комментария."""
