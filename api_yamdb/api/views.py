@@ -10,7 +10,7 @@ from api.serializers import (
     ReviewsSerializer, TitlesCreateSerializer
 )
 from titles.models import Categories, Genres, Titles, Comments, Reviews
-from api.permissions import IsAuthorOrReadOnlyPermission, IsAdminOrReadOnly, IsAdmin, IsModerator, IsAuthorOrReadOnly
+from api.permissions import IsAdminOrReadOnly, IsAdmin, IsModerator, IsAuthorOrReadOnly
 from .filters import TitlesFilter
 
 
