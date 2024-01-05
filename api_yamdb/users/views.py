@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from http import HTTPStatus
 from rest_framework import views, generics, filters, viewsets
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -11,6 +12,7 @@ from .serializers import (
     CreateUserSerializer,
     SignUpSerializer,
     TokenSerializer,
+    CurrentUserSerializer
 )
 from api.permissions import IsAdmin
 
@@ -24,6 +26,7 @@ class UserView(viewsets.ModelViewSet):
     permission_classes = [IsAdmin,]
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
+    http_method_names = ['get', 'post', 'head', 'delete', 'patch']
 
     def get_object(self):
         """Override to allow retrieval of users by username instead of ID."""
@@ -36,10 +39,12 @@ class CurrentUserView(generics.RetrieveUpdateAPIView):
     A view that allows the action 'GET' and 'PATCH' to be performed
     on the authenticated user.
     """
-    serializer_class = CreateUserSerializer
+    serializer_class = CurrentUserSerializer
     permission_classes = [IsAuthenticatedOrReadOnly,]
 
     def get_object(self):
+        if not self.request.user.is_authenticated:
+            raise AuthenticationFailed("Вы не авторизованы.")
         return get_object_or_404(
             User,
             username=self.request.user.username
