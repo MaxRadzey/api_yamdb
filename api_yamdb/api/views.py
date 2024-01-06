@@ -116,23 +116,17 @@ class CommentsViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Получение всех комментариев или конкретного комментария."""
-        title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Titles, pk=title_id)
         review_id = self.kwargs.get('review_id', False)
-        review = get_object_or_404(Reviews, title=title, pk=review_id)
         comment_id = self.kwargs.get('comment_id', False)
+        queryset = Comments.objects.all()
+        if review_id:
+            queryset = queryset.filter(review_id=review_id)
         if comment_id:
-            comment = get_object_or_404(
-                Comments, review=review, pk=comment_id
-            )
-            return comment
-        comments = Comments.objects.filter(review=review)
-        return comments
+            queryset = queryset.filter(pk=comment_id)
+        return queryset
 
     def perform_create(self, serializer):
         """Создание комментариев."""
-        title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Titles, pk=title_id)
         review_id = self.kwargs.get('review_id', False)
-        review = get_object_or_404(Reviews, title=title, pk=review_id)
+        review = get_object_or_404(Reviews, pk=review_id)
         serializer.save(author=self.request.user, review=review)
