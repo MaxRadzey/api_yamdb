@@ -1,4 +1,4 @@
-from rest_framework import viewsets, filters
+from rest_framework import viewsets, filters, mixins
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django.shortcuts import get_object_or_404
@@ -10,13 +10,15 @@ from api.serializers import (
     ReviewsSerializer, TitlesCreateSerializer
 )
 from titles.models import Categories, Genres, Titles, Comments, Reviews
-from api.permissions import IsAdminOrReadOnly, IsAdmin, IsModerator, IsAuthorOrReadOnly
+from api.permissions import IsAdmin, IsModerator, IsAuthorOrReadOnly
 from .filters import TitlesFilter
 
 
-class BaseViewSet(viewsets.ModelViewSet):
+class BaseViewSet(mixins.DestroyModelMixin,
+                  mixins.ListModelMixin,
+                  mixins.CreateModelMixin,
+                  viewsets.GenericViewSet):
     """Базовый вьюсет."""
-    pagination_class = LimitOffsetPagination
 
     def get_permissions(self):
         if self.request.method in ['POST', 'DELETE', 'PUT', 'PATCH']:
@@ -31,9 +33,9 @@ class CategoriesViewSet(BaseViewSet):
 
     queryset = Categories.objects.all()
     serializer_class = CategoriesSerializer
-    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
+    lookup_field = 'slug'
 
 
 class GenresViewSet(BaseViewSet):
@@ -41,16 +43,15 @@ class GenresViewSet(BaseViewSet):
 
     queryset = Genres.objects.all()
     serializer_class = GenresSerializer
-    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
+    lookup_field = 'slug'
 
 
-class TitlesViewSet(viewsets.ModelViewSet):
+class TitlesViewSet(BaseViewSet, mixins.RetrieveModelMixin, mixins.UpdateModelMixin):
     """Вьюсет для произведений."""
 
     queryset = Titles.objects.all()
-    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitlesFilter
     http_method_names = ['get', 'post', 'delete', 'patch']
