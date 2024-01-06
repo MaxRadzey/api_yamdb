@@ -10,7 +10,7 @@ from api.serializers import (
     ReviewsSerializer, TitlesCreateSerializer
 )
 from titles.models import Categories, Genres, Titles, Comments, Reviews
-from api.permissions import IsAdmin, IsModerator, IsAuthorOrReadOnly
+from api.permissions import IsAdmin, IsAuthorOrAdminOrModerator
 from .filters import TitlesFilter
 
 
@@ -72,12 +72,11 @@ class ReviewsViewSet(viewsets.ModelViewSet):
     """Вьюсет для отзывов."""
     serializer_class = ReviewsSerializer
     pagination_class = LimitOffsetPagination
+    http_method_names = ['get', 'post', 'delete', 'patch']
 
     def get_permissions(self):
-        if self.request.method in ['PUT', 'PATCH']:
-            self.permission_classes = [IsAuthorOrReadOnly]
-        elif self.request.method == 'DELETE':
-            self.permission_classes = [IsModerator | IsAdmin]
+        if self.request.method in ['PATCH', 'DELETE']:
+            self.permission_classes = [IsAuthorOrAdminOrModerator]
         else:
             self.permission_classes = [IsAuthenticatedOrReadOnly]
         return super(ReviewsViewSet, self).get_permissions()
@@ -106,12 +105,11 @@ class CommentsViewSet(viewsets.ModelViewSet):
     """Вьюсет для комментариев."""
     serializer_class = CommentsSerializer
     pagination_class = LimitOffsetPagination
+    http_method_names = ['get', 'post', 'delete', 'patch']
 
     def get_permissions(self):
-        if self.request.method in ['PUT', 'PATCH']:
-            self.permission_classes = [IsAuthorOrReadOnly]
-        elif self.request.method == 'DELETE':
-            self.permission_classes = [IsModerator | IsAdmin]
+        if self.request.method in ['PATCH', 'DELETE']:
+            self.permission_classes = [IsAuthorOrAdminOrModerator]
         else:
             self.permission_classes = [IsAuthenticatedOrReadOnly]
         return super(CommentsViewSet, self).get_permissions()
