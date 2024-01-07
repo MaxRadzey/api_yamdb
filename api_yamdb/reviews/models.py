@@ -2,9 +2,11 @@ from datetime import datetime
 
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models.signals import post_save
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.dispatch import receiver
 
-from titles.constants import SYMBOL_LIMIT
+from reviews.constants import SYMBOL_LIMIT
 
 User = get_user_model()
 
@@ -35,7 +37,7 @@ class Genres(models.Model):
         return self.name[:SYMBOL_LIMIT]
 
 
-class Titles(models.Model):
+class Title(models.Model):
 
     name = models.CharField('Название произведения', max_length=256)
     year = models.IntegerField(
@@ -66,7 +68,7 @@ class Titles(models.Model):
         return self.name[:SYMBOL_LIMIT]
 
 
-class Reviews(models.Model):
+class Review(models.Model):
     text = models.TextField('Текст отзыва',)
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, verbose_name='Автор'
@@ -82,7 +84,10 @@ class Reviews(models.Model):
         'Дата публикации', auto_now_add=True, db_index=True
     )
     title = models.ForeignKey(
-        Titles, on_delete=models.CASCADE, verbose_name='Произведение'
+        Title,
+        on_delete=models.CASCADE,
+        verbose_name='Произведение',
+        related_name='reviews'
     )
 
     class Meta:
@@ -96,6 +101,13 @@ class Reviews(models.Model):
         verbose_name_plural = 'Отзывы'
 
 
+@receiver(post_save, sender=Review)
+def update_title_rating(sender, instance, **kwargs):
+    average_score = Review.objects.filter(title=instance.title).aggregate(rating=models.Avg('score'))
+    instance.title.rating = average_score['rating']
+    instance.title.save()
+
+
 class Comments(models.Model):
     text = models.TextField('Текст комментария',)
     author = models.ForeignKey(
@@ -105,7 +117,7 @@ class Comments(models.Model):
         'Дата публикации', auto_now_add=True, db_index=True
     )
     review = models.ForeignKey(
-        Reviews,
+        Review,
         on_delete=models.CASCADE,
         verbose_name='Отзыв',
         related_name='reviews'

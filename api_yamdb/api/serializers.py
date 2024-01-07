@@ -4,7 +4,7 @@ import re
 from rest_framework import serializers
 from rest_framework.validators import ValidationError
 
-from titles.models import Categories, Genres, Titles, Reviews, Comments
+from reviews.models import Categories, Genres, Title, Review, Comments
 
 
 class CategoriesSerializer(serializers.ModelSerializer):
@@ -33,6 +33,7 @@ class GenresSerializer(serializers.ModelSerializer):
 
 class TitlesViewSerializer(serializers.ModelSerializer):
     """Сериализатор для просмотра произведений."""
+    rating = serializers.IntegerField()
     genre = GenresSerializer(many=True, read_only=True)
     category = CategoriesSerializer(read_only=True)
 
@@ -41,7 +42,7 @@ class TitlesViewSerializer(serializers.ModelSerializer):
             'id', 'name', 'year', 'rating',
             'description', 'genre', 'category'
         )
-        model = Titles
+        model = Title
 
 
 class TitlesCreateSerializer(serializers.ModelSerializer):
@@ -61,7 +62,7 @@ class TitlesCreateSerializer(serializers.ModelSerializer):
             'id', 'name', 'year',
             'description', 'genre', 'category'
         )
-        model = Titles
+        model = Title
 
         def validate_year(self, value):
             if value < 0 and value > datetime.now().year:
@@ -80,14 +81,7 @@ class ReviewsSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ['id', 'text', 'author', 'score', 'pub_date']
         read_only_fields = ('author', 'pub_date')
-        model = Reviews
-        # validators = [
-        #     serializers.UniqueTogetherValidator(
-        #         queryset=Reviews.objects.all(),
-        #         fields=('author', 'title'),
-        #         message='Нельзя делать больше одного отзыва!'
-        #     )
-        # ]
+        model = Review
 
 
 class CommentsSerializer(serializers.ModelSerializer):
