@@ -10,7 +10,7 @@ from api.serializers import (
     ReviewsSerializer, TitlesCreateSerializer
 )
 from titles.models import Categories, Genres, Titles, Comments, Reviews
-from api.permissions import IsAdmin, IsModerator, IsAuthorOrReadOnly
+from api.permissions import IsAdmin, IsAuthorOrAdminOrModerator
 from .filters import TitlesFilter
 
 
@@ -72,12 +72,11 @@ class ReviewsViewSet(viewsets.ModelViewSet):
     """Вьюсет для отзывов."""
     serializer_class = ReviewsSerializer
     pagination_class = LimitOffsetPagination
+    http_method_names = ['get', 'post', 'delete', 'patch']
 
     def get_permissions(self):
-        if self.request.method in ['PUT', 'PATCH']:
-            self.permission_classes = [IsAuthorOrReadOnly]
-        elif self.request.method == 'DELETE':
-            self.permission_classes = [IsModerator | IsAdmin]
+        if self.request.method in ['PATCH', 'DELETE']:
+            self.permission_classes = [IsAuthorOrAdminOrModerator]
         else:
             self.permission_classes = [IsAuthenticatedOrReadOnly]
         return super(ReviewsViewSet, self).get_permissions()
@@ -106,35 +105,28 @@ class CommentsViewSet(viewsets.ModelViewSet):
     """Вьюсет для комментариев."""
     serializer_class = CommentsSerializer
     pagination_class = LimitOffsetPagination
+    http_method_names = ['get', 'post', 'delete', 'patch']
 
     def get_permissions(self):
-        if self.request.method in ['PUT', 'PATCH']:
-            self.permission_classes = [IsAuthorOrReadOnly]
-        elif self.request.method == 'DELETE':
-            self.permission_classes = [IsModerator | IsAdmin]
+        if self.request.method in ['PATCH', 'DELETE']:
+            self.permission_classes = [IsAuthorOrAdminOrModerator]
         else:
             self.permission_classes = [IsAuthenticatedOrReadOnly]
         return super(CommentsViewSet, self).get_permissions()
 
     def get_queryset(self):
         """Получение всех комментариев или конкретного комментария."""
-        title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Titles, pk=title_id)
         review_id = self.kwargs.get('review_id', False)
-        review = get_object_or_404(Reviews, title=title, pk=review_id)
         comment_id = self.kwargs.get('comment_id', False)
+        queryset = Comments.objects.all()
+        if review_id:
+            queryset = queryset.filter(review_id=review_id)
         if comment_id:
-            comment = get_object_or_404(
-                Comments, review=review, pk=comment_id
-            )
-            return comment
-        comments = Comments.objects.filter(review=review)
-        return comments
+            queryset = queryset.filter(pk=comment_id)
+        return queryset
 
     def perform_create(self, serializer):
         """Создание комментариев."""
-        title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Titles, pk=title_id)
         review_id = self.kwargs.get('review_id', False)
-        review = get_object_or_404(Reviews, title=title, pk=review_id)
+        review = get_object_or_404(Reviews, pk=review_id)
         serializer.save(author=self.request.user, review=review)
