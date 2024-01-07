@@ -29,7 +29,7 @@ class Command(BaseCommand):
         )
 
         for file_name, columns_name, models in CSV_DATA_AND_MODELS:
-            with open(f'{absolute_path}/{file_name}', 'r') as csvfile:
+            with open(f'{absolute_path}/{file_name}', 'r', encoding='utf-8') as csvfile:
                 data = csv.DictReader(csvfile)
                 list_to_add_in_db = []
                 for row in data:
