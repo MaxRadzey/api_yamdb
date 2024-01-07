@@ -48,7 +48,11 @@ class GenresViewSet(BaseViewSet):
     lookup_field = 'slug'
 
 
-class TitlesViewSet(BaseViewSet, mixins.RetrieveModelMixin, mixins.UpdateModelMixin):
+class TitlesViewSet(
+    BaseViewSet,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin
+):
     """Вьюсет для произведений."""
 
     queryset = Titles.objects.all()

@@ -21,10 +21,26 @@ router_v1.register(
     ReviewsViewSet,
     basename='reviews'
 )
-router_v1.register(r'categories', CategoriesViewSet, basename='categories')
-router_v1.register(r'genres', GenresViewSet, basename='genres')
-router_v1.register('titles', TitlesViewSet, basename='titles')
-router_v1.register('users', UserView, basename='users')
+router_v1.register(
+    r'categories',
+    CategoriesViewSet,
+    basename='categories'
+)
+router_v1.register(
+    r'genres',
+    GenresViewSet,
+    basename='genres'
+)
+router_v1.register(
+    'titles',
+    TitlesViewSet,
+    basename='titles'
+)
+router_v1.register(
+    'users',
+    UserView,
+    basename='users'
+)
 
 
 api_v1_patterns = [

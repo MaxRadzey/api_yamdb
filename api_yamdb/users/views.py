@@ -29,15 +29,14 @@ class UserView(viewsets.ModelViewSet):
     http_method_names = ['get', 'post', 'head', 'delete', 'patch']
 
     def get_object(self):
-        """Override to allow retrieval of users by username instead of ID."""
-        username = self.kwargs.get('pk')  # 'pk' is the default name for detail route parameter
+        """Поиск пользователя по username"""
+        username = self.kwargs.get('pk')
         return get_object_or_404(User, username=username)
 
 
 class CurrentUserView(generics.RetrieveUpdateAPIView):
-    """
-    A view that allows the action 'GET' and 'PATCH' to be performed
-    on the authenticated user.
+    """ Профиль текущего пользователя.
+    Разрешение методов 'GET' и 'PATCH' для авторизованных пользователей.
     """
     serializer_class = CurrentUserSerializer
     permission_classes = [IsAuthenticatedOrReadOnly,]
