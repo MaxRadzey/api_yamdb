@@ -1,9 +1,11 @@
 from datetime import datetime
 
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
-from django.db import models, IntegrityError
+# from django.core.exceptions import ValidationError
+from django.db import models  # IntegrityError
+from django.dispatch import receiver
 from django.db.models import Avg
+from django.db.models.signals import post_save
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from reviews.constants import SYMBOL_LIMIT
@@ -68,19 +70,19 @@ class Title(models.Model):
         return self.name[:SYMBOL_LIMIT]
 
 
-class ReviewManager(models.Manager):
-    def create(self, **kwargs):
-        review = self.model(**kwargs)
-        try:
-            review.full_clean()
-        except ValidationError:
-            raise IntegrityError
-        review.save()
-        return review
+# class ReviewManager(models.Manager):
+#     def create(self, **kwargs):
+#         review = self.model(**kwargs)
+#         try:
+#             review.full_clean()
+#         except ValidationError:
+#             raise IntegrityError
+#         review.save()
+#         return review
 
 
 class Review(models.Model):
-    objects = ReviewManager()
+    # objects = ReviewManager()
 
     text = models.TextField('Текст отзыва',)
     author = models.ForeignKey(
@@ -103,24 +105,35 @@ class Review(models.Model):
     class Meta:
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
+        unique_together = ('author', 'title')
 
-    def clean(self):
-        # Check if a review by the same user for the same title already exists
-        # Only if this is a new review (i.e., it doesn't have an id yet)
-        if self.id is None:
-            review = Review.objects.filter(author=self.author, title=self.title)
-            if review.exists():
-                raise ValidationError("A review by this user for this title already exists.")
+    # def clean(self):
+    #     # Check if a review by the same user for the same title already exists
+    #     # Only if this is a new review (i.e., it doesn't have an id yet)
+    #     if self.id is None:
+    #         review = Review.objects.filter(author=self.author, title=self.title)
+    #         if review.exists():
+    #             raise ValidationError("A review by this user for this title already exists.")
 
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        super().save(*args, **kwargs)  # Call the "real" save() method.
-        self.update_title_rating()
+    # def save(self, *args, **kwargs):
+    #     try:
+    #         self.full_clean()
+    #     except ValidationError:
+    #         return
+    #     super().save(*args, **kwargs)  # Call the "real" save() method.
+    #     self.update_title_rating()
 
-    def update_title_rating(self):
-        average_score = Review.objects.filter(title=self.title).aggregate(rating=Avg('score'))
-        self.title.rating = average_score['rating']
-        self.title.save()
+    # def update_title_rating(self):
+    #     average_score = Review.objects.filter(title=self.title).aggregate(rating=Avg('score'))
+    #     self.title.rating = average_score['rating']
+    #     self.title.save()
+
+
+@receiver(post_save, sender=Review)
+def update_title_rating(sender, instance, **kwargs):
+    average_score = Review.objects.filter(title=instance.title).aggregate(rating=Avg('score'))
+    instance.title.rating = average_score['rating']
+    instance.title.save()
 
 
 class Comments(models.Model):
