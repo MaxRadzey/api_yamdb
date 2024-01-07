@@ -53,8 +53,8 @@ class Titles(models.Model):
     )
     rating = models.IntegerField(
         'Рейтинг произведения', null=True, validators=[
-            MaxValueValidator(10),
-            MinValueValidator(1)
+            MaxValueValidator(datetime.now().year),
+            MinValueValidator(0)
         ]
     )
 
@@ -86,6 +86,12 @@ class Reviews(models.Model):
     )
 
     class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['author', 'title'],
+                name='unique_author_title'
+            )
+        ]
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
 
@@ -99,7 +105,10 @@ class Comments(models.Model):
         'Дата публикации', auto_now_add=True, db_index=True
     )
     review = models.ForeignKey(
-        Reviews, on_delete=models.CASCADE, verbose_name='Отзыв'
+        Reviews,
+        on_delete=models.CASCADE,
+        verbose_name='Отзыв',
+        related_name='reviews'
     )
 
     class Meta:

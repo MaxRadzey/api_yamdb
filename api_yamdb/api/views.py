@@ -1,6 +1,7 @@
 from rest_framework import viewsets, filters
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from django.db import models
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -10,7 +11,7 @@ from api.serializers import (
     ReviewsSerializer, TitlesCreateSerializer
 )
 from titles.models import Categories, Genres, Titles, Comments, Reviews
-from api.permissions import IsAuthorOrReadOnlyPermission, IsAdminOrReadOnly, IsAdmin, IsModerator, IsAuthorOrReadOnly
+from api.permissions import IsAdminOrReadOnly, IsAdmin, IsModerator, IsAuthorOrReadOnly
 from .filters import TitlesFilter
 
 
@@ -62,17 +63,22 @@ class TitlesViewSet(viewsets.ModelViewSet):
             return TitlesCreateSerializer
         return TitlesViewSerializer
 
+    # def get_object(self):
+    #     title_id = self.kwargs['pk']
+    #     title = Titles.objects.filter(pk=title_id).annotate(
+    #         rating=models.Sum(models.F('reviews__score')) / models.Count(models.F('reviews'))
+    #     )
+    #     return title
+
 
 class ReviewsViewSet(viewsets.ModelViewSet):
     """Вьюсет для отзывов."""
     serializer_class = ReviewsSerializer
-    pagination_class = LimitOffsetPagination
+    http_method_names = ['get', 'post', 'delete', 'patch']
 
     def get_permissions(self):
-        if self.request.method in ['PUT', 'PATCH']:
-            self.permission_classes = [IsAuthorOrReadOnly]
-        elif self.request.method == 'DELETE':
-            self.permission_classes = [IsModerator | IsAdmin]
+        if self.request.method == ['DELETE', 'PATCH']:
+            self.permission_classes = [IsModerator | IsAdmin | IsAuthorOrReadOnly]
         else:
             self.permission_classes = [IsAuthenticatedOrReadOnly]
         return super(ReviewsViewSet, self).get_permissions()
@@ -100,15 +106,15 @@ class ReviewsViewSet(viewsets.ModelViewSet):
 class CommentsViewSet(viewsets.ModelViewSet):
     """Вьюсет для комментариев."""
     serializer_class = CommentsSerializer
+    pagination_class = LimitOffsetPagination
+    http_method_names = ['get', 'post', 'delete', 'patch']
 
     def get_permissions(self):
-        if self.request.method in ['PUT', 'PATCH']:
+        if self.request.method in ['PATCH', 'DELETE']:
             self.permission_classes = [IsAuthorOrReadOnly]
-        elif self.request.method == 'DELETE':
-            self.permission_classes = [IsModerator | IsAdmin]
         else:
             self.permission_classes = [IsAuthenticatedOrReadOnly]
-        return super(ReviewsViewSet, self).get_permissions()
+        return super(CommentsViewSet, self).get_permissions()
 
     def get_queryset(self):
         """Получение всех комментариев или конкретного комментария."""

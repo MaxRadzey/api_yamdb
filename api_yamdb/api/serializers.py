@@ -33,7 +33,6 @@ class GenresSerializer(serializers.ModelSerializer):
 
 class TitlesViewSerializer(serializers.ModelSerializer):
     """Сериализатор для просмотра произведений."""
-
     genre = GenresSerializer(many=True, read_only=True)
     category = CategoriesSerializer(read_only=True)
 
@@ -47,7 +46,6 @@ class TitlesViewSerializer(serializers.ModelSerializer):
 
 class TitlesCreateSerializer(serializers.ModelSerializer):
     """Сериализатор для создание произведений."""
-    rating = ...
     genre = serializers.SlugRelatedField(
         many=True,
         queryset=Genres.objects.all(),
@@ -60,7 +58,7 @@ class TitlesCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = (
-            'id', 'name', 'year', 'rating',
+            'id', 'name', 'year',
             'description', 'genre', 'category'
         )
         model = Titles
@@ -83,6 +81,13 @@ class ReviewsSerializer(serializers.ModelSerializer):
         fields = ['id', 'text', 'author', 'score', 'pub_date']
         read_only_fields = ('author', 'pub_date')
         model = Reviews
+        # validators = [
+        #     serializers.UniqueTogetherValidator(
+        #         queryset=Reviews.objects.all(),
+        #         fields=('author', 'title'),
+        #         message='Нельзя делать больше одного отзыва!'
+        #     )
+        # ]
 
 
 class CommentsSerializer(serializers.ModelSerializer):
