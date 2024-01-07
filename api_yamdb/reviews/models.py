@@ -74,7 +74,7 @@ class ReviewManager(models.Manager):
         try:
             review.full_clean()
         except ValidationError:
-            raise IntegrityError("A review by this user for this title already exists.")
+            raise IntegrityError
         review.save()
         return review
 
