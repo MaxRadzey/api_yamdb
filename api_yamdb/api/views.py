@@ -1,6 +1,7 @@
 from rest_framework import viewsets, filters, mixins
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework import serializers
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -9,7 +10,7 @@ from api.serializers import (
     TitlesViewSerializer, CommentsSerializer,
     ReviewsSerializer, TitlesCreateSerializer
 )
-from titles.models import Categories, Genres, Titles, Comments, Reviews
+from reviews.models import Categories, Genres, Title, Comments, Review
 from api.permissions import IsAdmin, IsAuthorOrAdminOrModerator
 from .filters import TitlesFilter
 
@@ -55,7 +56,7 @@ class TitlesViewSet(
 ):
     """Вьюсет для произведений."""
 
-    queryset = Titles.objects.all()
+    queryset = Title.objects.all()
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitlesFilter
     http_method_names = ['get', 'post', 'delete', 'patch']
@@ -84,20 +85,22 @@ class ReviewsViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Получение всех отзывов или конкретного отзыва."""
         title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Titles, pk=title_id)
+        title = get_object_or_404(Title, pk=title_id)
         review_id = self.kwargs.get('review_id', False)
         if review_id:
             review = get_object_or_404(
-                Titles, title=title, pk=review_id
+                Title, title=title, pk=review_id
             )
             return review
-        reviews = Reviews.objects.filter(title=title)
+        reviews = Review.objects.filter(title=title)
         return reviews
 
     def perform_create(self, serializer):
         """Cоздание отзыва."""
         title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Titles, pk=title_id)
+        title = get_object_or_404(Title, pk=title_id)
+        if Review.objects.filter(author=self.request.user, title=title).exists():
+            raise serializers.ValidationError('You have already reviewed this title.')
         serializer.save(author=self.request.user, title=title)
 
 
@@ -128,5 +131,5 @@ class CommentsViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """Создание комментариев."""
         review_id = self.kwargs.get('review_id', False)
-        review = get_object_or_404(Reviews, pk=review_id)
+        review = get_object_or_404(Review, pk=review_id)
         serializer.save(author=self.request.user, review=review)

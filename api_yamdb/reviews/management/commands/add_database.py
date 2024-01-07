@@ -3,7 +3,7 @@ import os
 
 from django.core.management.base import BaseCommand
 
-from titles.models import Categories, Genres, Titles, Reviews, Comments, User
+from reviews.models import Categories, Genres, Title, Review, Comments, User
 
 
 class Command(BaseCommand):
@@ -18,13 +18,13 @@ class Command(BaseCommand):
             ('category.csv', {}, Categories),
             ('genre.csv', {}, Genres),
             ('users.csv', {}, User),
-            ('titles.csv', {'category': 'category_id'}, Titles),
+            ('titles.csv', {'category': 'category_id'}, Title),
             (
                 'genre_title.csv',
                 {'title_id': 'titles_id', 'genre_id': 'genres_id'},
-                Titles.genre.through
+                Title.genre.through
             ),
-            ('review.csv', {'author': 'author_id'}, Reviews),
+            ('review.csv', {'author': 'author_id'}, Review),
             ('comments.csv', {'author': 'author_id'}, Comments),
         )
 

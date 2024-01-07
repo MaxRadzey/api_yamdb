@@ -1,10 +1,12 @@
 from datetime import datetime
 
 from django.contrib.auth import get_user_model
-from django.db import models
+from django.core.exceptions import ValidationError
+from django.db import models, IntegrityError
+from django.db.models import Avg
 from django.core.validators import MaxValueValidator, MinValueValidator
 
-from titles.constants import SYMBOL_LIMIT
+from reviews.constants import SYMBOL_LIMIT
 
 User = get_user_model()
 
@@ -35,7 +37,7 @@ class Genres(models.Model):
         return self.name[:SYMBOL_LIMIT]
 
 
-class Titles(models.Model):
+class Title(models.Model):
 
     name = models.CharField('Название произведения', max_length=256)
     year = models.IntegerField(
@@ -66,7 +68,20 @@ class Titles(models.Model):
         return self.name[:SYMBOL_LIMIT]
 
 
-class Reviews(models.Model):
+class ReviewManager(models.Manager):
+    def create(self, **kwargs):
+        review = self.model(**kwargs)
+        try:
+            review.full_clean()
+        except ValidationError:
+            raise IntegrityError("A review by this user for this title already exists.")
+        review.save()
+        return review
+
+
+class Review(models.Model):
+    objects = ReviewManager()
+
     text = models.TextField('Текст отзыва',)
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, verbose_name='Автор'
@@ -82,12 +97,30 @@ class Reviews(models.Model):
         'Дата публикации', auto_now_add=True, db_index=True
     )
     title = models.ForeignKey(
-        Titles, on_delete=models.CASCADE, verbose_name='Произведение'
+        Title, on_delete=models.CASCADE, verbose_name='Произведение'
     )
 
     class Meta:
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
+
+    def clean(self):
+        # Check if a review by the same user for the same title already exists
+        # Only if this is a new review (i.e., it doesn't have an id yet)
+        if self.id is None:
+            review = Review.objects.filter(author=self.author, title=self.title)
+            if review.exists():
+                raise ValidationError("A review by this user for this title already exists.")
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)  # Call the "real" save() method.
+        self.update_title_rating()
+
+    def update_title_rating(self):
+        average_score = Review.objects.filter(title=self.title).aggregate(rating=Avg('score'))
+        self.title.rating = average_score['rating']
+        self.title.save()
 
 
 class Comments(models.Model):
@@ -99,7 +132,7 @@ class Comments(models.Model):
         'Дата публикации', auto_now_add=True, db_index=True
     )
     review = models.ForeignKey(
-        Reviews, on_delete=models.CASCADE, verbose_name='Отзыв'
+        Review, on_delete=models.CASCADE, verbose_name='Отзыв'
     )
 
     class Meta:
