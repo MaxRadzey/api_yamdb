@@ -1,6 +1,7 @@
 from rest_framework import viewsets, filters, mixins, serializers
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework import serializers
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -99,7 +100,8 @@ class ReviewsViewSet(viewsets.ModelViewSet):
         title_id = self.kwargs.get('title_id')
         title = get_object_or_404(Title, pk=title_id)
         if Review.objects.filter(author=self.request.user, title=title).exists():
-            raise serializers.ValidationError('Вы уже оставляли отзыв.')
+
+            raise serializers.ValidationError('You have already reviewed this title.')
         serializer.save(author=self.request.user, title=title)
 
 
