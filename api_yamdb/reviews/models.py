@@ -1,8 +1,7 @@
 from datetime import datetime
 
 from django.contrib.auth import get_user_model
-# from django.core.exceptions import ValidationError
-from django.db import models  # IntegrityError
+from django.db import models
 from django.dispatch import receiver
 from django.db.models import Avg
 from django.db.models.signals import post_save
@@ -70,19 +69,7 @@ class Title(models.Model):
         return self.name[:SYMBOL_LIMIT]
 
 
-# class ReviewManager(models.Manager):
-#     def create(self, **kwargs):
-#         review = self.model(**kwargs)
-#         try:
-#             review.full_clean()
-#         except ValidationError:
-#             raise IntegrityError
-#         review.save()
-#         return review
-
-
 class Review(models.Model):
-    # objects = ReviewManager()
 
     text = models.TextField('Текст отзыва',)
     author = models.ForeignKey(
@@ -106,27 +93,6 @@ class Review(models.Model):
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         unique_together = ('author', 'title')
-
-    # def clean(self):
-    #     # Check if a review by the same user for the same title already exists
-    #     # Only if this is a new review (i.e., it doesn't have an id yet)
-    #     if self.id is None:
-    #         review = Review.objects.filter(author=self.author, title=self.title)
-    #         if review.exists():
-    #             raise ValidationError("A review by this user for this title already exists.")
-
-    # def save(self, *args, **kwargs):
-    #     try:
-    #         self.full_clean()
-    #     except ValidationError:
-    #         return
-    #     super().save(*args, **kwargs)  # Call the "real" save() method.
-    #     self.update_title_rating()
-
-    # def update_title_rating(self):
-    #     average_score = Review.objects.filter(title=self.title).aggregate(rating=Avg('score'))
-    #     self.title.rating = average_score['rating']
-    #     self.title.save()
 
 
 @receiver(post_save, sender=Review)
