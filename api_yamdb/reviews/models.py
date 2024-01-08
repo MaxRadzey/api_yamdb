@@ -94,6 +94,7 @@ class Review(models.Model):
         verbose_name_plural = 'Отзывы'
         unique_together = ('author', 'title')
 
+
 @receiver(post_save, sender=Review)
 def update_title_rating(sender, instance, **kwargs):
     average_score = Review.objects.filter(title=instance.title).aggregate(rating=Avg('score'))

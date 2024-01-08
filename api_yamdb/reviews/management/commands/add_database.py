@@ -6,9 +6,9 @@ from django.core.management.base import BaseCommand
 from reviews.models import Categories, Genres, Title, Review, Comments, User
 
 
-
 class Command(BaseCommand):
-    help = 'Импорт данных из csv файла в БД'
+    help = ('Импорт данных из csv файла в БД.'
+            'Перед импортом данных необходимо удалить БД.')
 
     def handle(self, *args, **options):
         self.stdout.write('Добавление базы данных!')
@@ -20,11 +20,7 @@ class Command(BaseCommand):
             ('genre.csv', {}, Genres),
             ('users.csv', {}, User),
             ('titles.csv', {'category': 'category_id'}, Title),
-            (
-                'genre_title.csv',
-                {'title_id': 'titles_id', 'genre_id': 'genres_id'},
-                Title.genre.through
-            ),
+            ('genre_title.csv', {'genre_id': 'genres_id'}, Title.genre.through),
             ('review.csv', {'author': 'author_id'}, Review),
             ('comments.csv', {'author': 'author_id'}, Comments),
         )
