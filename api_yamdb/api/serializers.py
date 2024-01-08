@@ -33,7 +33,7 @@ class GenresSerializer(serializers.ModelSerializer):
 
 class TitlesViewSerializer(serializers.ModelSerializer):
     """Сериализатор для просмотра произведений."""
-
+    rating = serializers.IntegerField()
     genre = GenresSerializer(many=True, read_only=True)
     category = CategoriesSerializer(read_only=True)
 
@@ -47,7 +47,6 @@ class TitlesViewSerializer(serializers.ModelSerializer):
 
 class TitlesCreateSerializer(serializers.ModelSerializer):
     """Сериализатор для создание произведений."""
-    rating = ...
     genre = serializers.SlugRelatedField(
         many=True,
         queryset=Genres.objects.all(),
@@ -60,7 +59,7 @@ class TitlesCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = (
-            'id', 'name', 'year', 'rating',
+            'id', 'name', 'year',
             'description', 'genre', 'category'
         )
         model = Title
