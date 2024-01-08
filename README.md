@@ -9,9 +9,9 @@
 
 ##  Описание
 
-[Maxim Radzey](https://github.com/MaxRadzey)
-[Alexey Danilin](https://github.com/LeSick)
-[Klikmok](https://github.com/Klikmok)
+- [Maxim Radzey](https://github.com/MaxRadzey)
+- [Alexey Danilin](https://github.com/LeSick)
+- [Klikmok](https://github.com/Klikmok)
 
 ##  Описание
 Проект YaMDb собирает отзывы пользователей на произведения. Сами произведения в YaMDb не хранятся, здесь нельзя посмотреть фильм или послушать музыку.  
