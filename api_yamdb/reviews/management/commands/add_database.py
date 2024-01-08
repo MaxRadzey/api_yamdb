@@ -20,13 +20,19 @@ class Command(BaseCommand):
             ('genre.csv', {}, Genres),
             ('users.csv', {}, User),
             ('titles.csv', {'category': 'category_id'}, Title),
-            ('genre_title.csv', {'genre_id': 'genres_id'}, Title.genre.through),
+            (
+                'genre_title.csv',
+                {'genre_id': 'genres_id'},
+                Title.genre.through
+            ),
             ('review.csv', {'author': 'author_id'}, Review),
             ('comments.csv', {'author': 'author_id'}, Comments),
         )
 
         for file_name, columns_name, models in CSV_DATA_AND_MODELS:
-            with open(f'{absolute_path}/{file_name}', 'r', encoding='utf-8') as csvfile:
+            with open(
+                f'{absolute_path}/{file_name}', 'r', encoding='utf-8'
+            ) as csvfile:
                 data = csv.DictReader(csvfile)
                 list_to_add_in_db = []
                 for row in data:

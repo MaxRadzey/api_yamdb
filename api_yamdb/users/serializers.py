@@ -50,7 +50,10 @@ class CreateUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'username', 'first_name', 'last_name', 'role', 'bio')
+        fields = (
+            'email', 'username', 'first_name',
+            'last_name', 'role', 'bio'
+        )
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -85,5 +88,8 @@ class TokenSerializer(serializers.Serializer):
 class CurrentUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'username', 'bio', 'email', 'role')
+        fields = (
+            'first_name', 'last_name', 'username',
+            'bio', 'email', 'role'
+        )
         read_only_fields = ('role',)

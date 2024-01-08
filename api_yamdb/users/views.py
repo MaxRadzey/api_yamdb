@@ -23,7 +23,7 @@ class UserView(viewsets.ModelViewSet):
     """Создание и редактирование пользователя администратором."""
     queryset = User.objects.all()
     serializer_class = CreateUserSerializer
-    permission_classes = [IsAdmin,]
+    permission_classes = [IsAdmin, ]
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
     http_method_names = ['get', 'post', 'head', 'delete', 'patch']
@@ -39,7 +39,7 @@ class CurrentUserView(generics.RetrieveUpdateAPIView):
     Разрешение методов 'GET' и 'PATCH' для авторизованных пользователей.
     """
     serializer_class = CurrentUserSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly,]
+    permission_classes = [IsAuthenticatedOrReadOnly, ]
 
     def get_object(self):
         if not self.request.user.is_authenticated:
@@ -53,7 +53,7 @@ class CurrentUserView(generics.RetrieveUpdateAPIView):
 class SignUpView(views.APIView):
     """Самостоятельная регистрация нового пользователя."""
     serializer_class = SignUpSerializer
-    permission_classes = [AllowAny,]
+    permission_classes = [AllowAny, ]
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
@@ -102,7 +102,7 @@ class SignUpView(views.APIView):
 
 class TokenView(views.APIView):
     serializer_class = TokenSerializer
-    permission_classes = [AllowAny,]
+    permission_classes = [AllowAny, ]
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)

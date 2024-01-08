@@ -99,9 +99,13 @@ class ReviewsViewSet(viewsets.ModelViewSet):
         """Cоздание отзыва."""
         title_id = self.kwargs.get('title_id')
         title = get_object_or_404(Title, pk=title_id)
-        if Review.objects.filter(author=self.request.user, title=title).exists():
+        if Review.objects.filter(
+            author=self.request.user, title=title
+        ).exists():
 
-            raise serializers.ValidationError('You have already reviewed this title.')
+            raise serializers.ValidationError(
+                'You have already reviewed this title.'
+            )
         serializer.save(author=self.request.user, title=title)
 
 
