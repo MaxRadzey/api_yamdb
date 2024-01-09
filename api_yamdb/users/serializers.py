@@ -1,18 +1,12 @@
-from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxLengthValidator, RegexValidator
-from rest_framework.validators import UniqueValidator, ValidationError
+from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
+
+from .validators import validate_username
+from .constants import EMAIL_MAX_LENGTH, USERNAME_MAX_LENGTH
 
 User = get_user_model()
-
-
-def validate_username(value):
-    """Валидация username.
-    Запрещено использовать username 'me'.
-    """
-    if value.lower() == 'me':
-        raise ValidationError("Такой username недопустим.")
-    return value
 
 
 class CreateUserSerializer(serializers.ModelSerializer):
@@ -20,31 +14,19 @@ class CreateUserSerializer(serializers.ModelSerializer):
         required=True,
         validators=[
             UniqueValidator(queryset=User.objects.all()),
-            MaxLengthValidator(254),
+            MaxLengthValidator(EMAIL_MAX_LENGTH),
         ]
     )
     username = serializers.CharField(
         required=True,
         validators=[
             UniqueValidator(queryset=User.objects.all()),
-            MaxLengthValidator(150),
+            MaxLengthValidator(USERNAME_MAX_LENGTH),
             RegexValidator(
                 regex=r'^[\w.@+-]+\Z',
                 message='Invalid email format.'
             ),
             validate_username
-        ]
-    )
-    first_name = serializers.CharField(
-        required=False,
-        validators=[
-            MaxLengthValidator(150)
-        ]
-    )
-    last_name = serializers.CharField(
-        required=False,
-        validators=[
-            MaxLengthValidator(150)
         ]
     )
 
@@ -78,6 +60,26 @@ class SignUpSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'email')
+
+    def validate(self, data):
+        username = data.get('username')
+        email = data.get('email')
+
+        user_with_same_email = User.objects.filter(email=email).first()
+        user_with_same_username = User.objects.filter(
+            username=username
+        ).first()
+
+        if user_with_same_email and user_with_same_email.username != username:
+            raise serializers.ValidationError(
+                "Такой email уже зарегистрирован."
+            )
+
+        if user_with_same_username and user_with_same_username.email != email:
+            raise serializers.ValidationError(
+                "Такой username уже зарегистрирован."
+            )
+        return data
 
 
 class TokenSerializer(serializers.Serializer):

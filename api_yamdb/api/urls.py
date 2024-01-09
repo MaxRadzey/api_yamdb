@@ -8,7 +8,7 @@ from api.views import (
     ReviewsViewSet,
     CommentsViewSet
 )
-from users.views import UserView, CurrentUserView
+from users.views import UserView
 
 router_v1 = routers.DefaultRouter()
 router_v1.register(
@@ -44,7 +44,6 @@ router_v1.register(
 
 
 api_v1_patterns = [
-    path('users/me/', CurrentUserView.as_view(), name='current_user'),
     path('', include(router_v1.urls)),
     path('auth/', include('users.urls')),
 ]
