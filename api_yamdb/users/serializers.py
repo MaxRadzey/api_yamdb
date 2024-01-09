@@ -45,7 +45,7 @@ class SignUpSerializer(serializers.ModelSerializer):
             MaxLengthValidator(150),
             RegexValidator(
                 regex=r'^[\w.@+-]+\Z',
-                message='Invalid email format.'
+                message='Неверный формат адреса.'
             ),
             validate_username
         ]
