@@ -1,6 +1,6 @@
 from rest_framework import permissions
 
-from users.constants import MODERATOR, ADMIN
+from users.constants import ADMIN, MODERATOR
 
 
 class IsAuthorOrReadOnly(permissions.IsAuthenticatedOrReadOnly):

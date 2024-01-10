@@ -1,9 +1,9 @@
 from django.core.mail import send_mail
 from django.conf import settings
 from django.shortcuts import get_object_or_404
-
-import random
-import string
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
 
 from reviews.models import Title, Review
 
@@ -15,22 +15,17 @@ def calculate_rating(data):
 
 def send_confirmation_email(user):
     """Функция для отправки письма с кодом подтверждения"""
-    confirmation_code = ''.join(
-        random.choices(
-            string.ascii_uppercase + string.digits,
-            k=6
-        )
-    )
-    user.confirmation_code = confirmation_code
-    user.save()
+    token = default_token_generator.make_token(user)
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
 
     send_mail(
         'Your confirmation code',
-        f'Your confirmation code is {confirmation_code}',
+        f'Your confirmation code is {token}',
         settings.DEFAULT_FROM_EMAIL,
         [user.email],
         fail_silently=False,
     )
+    return uid, token
 
 
 def get_title(data):
