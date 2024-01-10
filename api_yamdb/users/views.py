@@ -1,9 +1,10 @@
 from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
-from rest_framework.decorators import action
+from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
 from rest_framework import views, filters, viewsets, status
+from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -73,7 +74,7 @@ class SignUpView(views.APIView):
             return Response(
                 {
                     'username': user.username,
-                    'email': user.email
+                    'email': user.email,
                 },
                 status=HTTPStatus.OK
             )
@@ -86,7 +87,7 @@ class SignUpView(views.APIView):
 
 class TokenView(views.APIView):
     serializer_class = TokenSerializer
-    permission_classes = [AllowAny, ]
+    permission_classes = [AllowAny,]
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
@@ -95,7 +96,7 @@ class TokenView(views.APIView):
         confirmation_code = serializer.validated_data['confirmation_code']
         user = get_object_or_404(User, username=username)
 
-        if user.confirmation_code != confirmation_code:
+        if not default_token_generator.check_token(user, confirmation_code):
             return Response(
                 {'detail': 'Неверный код подтверждения'},
                 status=HTTPStatus.BAD_REQUEST

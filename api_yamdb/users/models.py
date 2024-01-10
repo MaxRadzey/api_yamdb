@@ -46,7 +46,6 @@ class DBUser(AbstractUser):
     objects = DBUserManager()
     bio = models.TextField(blank=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=USER)
-    confirmation_code = models.CharField(max_length=6, blank=True)
 
     @property
     def is_admin(self):
