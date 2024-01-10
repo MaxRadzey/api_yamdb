@@ -2,12 +2,11 @@ from datetime import datetime
 
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.dispatch import receiver
-from django.db.models import Avg
-from django.db.models.signals import post_save
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 from reviews.constants import SYMBOL_LIMIT
+from .mixins import AuthorPubDateAbstractModel
+
 
 User = get_user_model()
 
@@ -54,12 +53,6 @@ class Title(models.Model):
         Categories, on_delete=models.CASCADE,
         verbose_name='Категория'
     )
-    rating = models.IntegerField(
-        'Рейтинг произведения', null=True, validators=[
-            MaxValueValidator(10),
-            MinValueValidator(1)
-        ]
-    )
 
     class Meta:
         verbose_name = 'Произведение'
@@ -69,54 +62,43 @@ class Title(models.Model):
         return self.name[:SYMBOL_LIMIT]
 
 
-class Review(models.Model):
+class Review(AuthorPubDateAbstractModel):
 
     text = models.TextField('Текст отзыва',)
-    author = models.ForeignKey(
-        User, on_delete=models.CASCADE, verbose_name='Автор'
-    )
-    score = models.IntegerField(
+    score = models.PositiveSmallIntegerField(
         default=1,
         validators=[
-            MaxValueValidator(10),
-            MinValueValidator(1)
+            MaxValueValidator(10, message='Оценка не должна быть больше 10!'),
+            MinValueValidator(1, message='Оценка не должна быть меньше 1!')
         ]
     )
-    pub_date = models.DateTimeField(
-        'Дата публикации', auto_now_add=True, db_index=True
-    )
     title = models.ForeignKey(
-        Title, on_delete=models.CASCADE, verbose_name='Произведение'
+        Title,
+        on_delete=models.CASCADE,
+        verbose_name='Произведение',
+        related_name='reviews'
+
     )
 
-    class Meta:
+    class Meta(AuthorPubDateAbstractModel.Meta):
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
-        unique_together = ('author', 'title')
+        constraints = (models.UniqueConstraint(
+            fields=['author', 'title'], name='unique_review'
+        ),
+        )
 
 
-@receiver(post_save, sender=Review)
-def update_title_rating(sender, instance, **kwargs):
-    average_score = Review.objects.filter(
-        title=instance.title
-    ).aggregate(rating=Avg('score'))
-    instance.title.rating = average_score['rating']
-    instance.title.save()
-
-
-class Comments(models.Model):
+class Comments(AuthorPubDateAbstractModel):
     text = models.TextField('Текст комментария',)
-    author = models.ForeignKey(
-        User, on_delete=models.CASCADE, verbose_name='Автор'
-    )
-    pub_date = models.DateTimeField(
-        'Дата публикации', auto_now_add=True, db_index=True
-    )
     review = models.ForeignKey(
-        Review, on_delete=models.CASCADE, verbose_name='Отзыв'
+        Review,
+        on_delete=models.CASCADE,
+        verbose_name='Отзыв',
+        related_name='comments'
     )
 
-    class Meta:
+    class Meta(AuthorPubDateAbstractModel.Meta):
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
 

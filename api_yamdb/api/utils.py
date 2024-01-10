@@ -1,7 +1,11 @@
 from django.core.mail import send_mail
 from django.conf import settings
+from django.shortcuts import get_object_or_404
+
 import random
 import string
+
+from reviews.models import Title, Review
 
 
 def calculate_rating(data):
@@ -27,3 +31,13 @@ def send_confirmation_email(user):
         [user.email],
         fail_silently=False,
     )
+
+
+def get_title(data):
+    title_id = data.get('title_id')
+    return get_object_or_404(Title, pk=title_id)
+
+
+def get_review(data):
+    review_id = data.get('review_id')
+    return get_object_or_404(Review, pk=review_id)
