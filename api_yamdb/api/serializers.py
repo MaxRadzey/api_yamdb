@@ -3,8 +3,12 @@ import re
 
 from rest_framework import serializers
 from rest_framework.validators import ValidationError
+from django.contrib.auth import get_user_model
 
 from reviews.models import Categories, Genres, Title, Review, Comments
+
+
+User = get_user_model()
 
 
 class CategoriesSerializer(serializers.ModelSerializer):
@@ -33,9 +37,9 @@ class GenresSerializer(serializers.ModelSerializer):
 
 class TitlesViewSerializer(serializers.ModelSerializer):
     """Сериализатор для просмотра произведений."""
-    rating = serializers.IntegerField()
-    genre = GenresSerializer(many=True, read_only=True)
-    category = CategoriesSerializer(read_only=True)
+    rating = serializers.IntegerField(read_only=True,)
+    genre = GenresSerializer(many=True, read_only=True,)
+    category = CategoriesSerializer(read_only=True,)
 
     class Meta:
         fields = (
@@ -74,14 +78,22 @@ class TitlesCreateSerializer(serializers.ModelSerializer):
 
 class ReviewsSerializer(serializers.ModelSerializer):
     """Сериализатор для отзывов."""
-    author = serializers.StringRelatedField(
-        read_only=True, default=serializers.CurrentUserDefault()
+    author = serializers.SlugRelatedField(
+        default=serializers.CurrentUserDefault(),
+        queryset=User.objects.all(),
+        slug_field='username'
     )
 
     class Meta:
-        fields = ['id', 'text', 'author', 'score', 'pub_date']
-        read_only_fields = ('author', 'pub_date')
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
+        read_only_fields = ('pub_date',)
         model = Review
+        # validators = [
+        #     serializers.UniqueTogetherValidator(
+        #         queryset=Review.objects.all(),
+        #         fields=('author', 'title')
+        #     )
+        # ]
 
 
 class CommentsSerializer(serializers.ModelSerializer):
