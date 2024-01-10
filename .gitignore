@@ -152,3 +152,6 @@ mypy.ini
 
 # папки мэйл-бэкэнда
 sent_emails/
+
+# папки с ревью
+_reviews/
