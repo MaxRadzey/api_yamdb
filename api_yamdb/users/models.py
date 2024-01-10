@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
-from .constants import USER, ROLE_CHOICES
+from .constants import USER, ROLE_CHOICES, ADMIN
 
 
 class DBUserManager(BaseUserManager):
@@ -47,3 +47,11 @@ class DBUser(AbstractUser):
     bio = models.TextField(blank=True)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=USER)
     confirmation_code = models.CharField(max_length=6, blank=True)
+
+    @property
+    def is_admin(self):
+        return (
+            self.role == ADMIN
+            or self.is_superuser
+            or self.is_staff
+        )
