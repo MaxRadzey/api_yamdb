@@ -31,7 +31,7 @@ class UserView(viewsets.ModelViewSet):
     @action(
         detail=False,
         methods=['get', 'patch'],
-        permission_classes=[IsAuthenticatedOrReadOnly,]
+        permission_classes=(IsAuthenticatedOrReadOnly,)
     )
     def me(self, request):
         if not request.user.is_authenticated:
