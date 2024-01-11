@@ -1,52 +1,38 @@
-from rest_framework import viewsets, filters, mixins, serializers
+from rest_framework import viewsets, mixins, serializers
 from rest_framework.pagination import LimitOffsetPagination
 from django.db import models
 from django_filters.rest_framework import DjangoFilterBackend
 
 from api.serializers import (
-    CategoriesSerializer, GenresSerializer,
-    TitlesViewSerializer, CommentsSerializer,
+    CategorySerializer, GenreSerializer,
+    TitleViewSerializer, CommentsSerializer,
     ReviewsSerializer, TitlesCreateSerializer
 )
-from reviews.models import Categories, Genres, Title, Review
-from api.permissions import IsAuthorOrAdminOrModerator, IsAdminOrReadOnly
-from .filters import TitlesFilter
-from .utils import get_title, get_review
+from reviews.models import Category, Genre, Title, Review
+from api.permissions import IsAuthorOrAdminOrModerator
+from api.filters import TitlesFilter
+from api.mixins import BaseViewSet, CategoryGenreBaseViewSet
+from api.utils import get_title, get_review
 
 
-class BaseViewSet(mixins.DestroyModelMixin,
-                  mixins.ListModelMixin,
-                  mixins.CreateModelMixin,
-                  viewsets.GenericViewSet):
-    """Базовый вьюсет."""
-
-    permission_classes = [IsAdminOrReadOnly]
-
-
-class CategoriesViewSet(BaseViewSet):
+class CategoryViewSet(CategoryGenreBaseViewSet):
     """Вьюсет для категорий."""
 
-    queryset = Categories.objects.all()
-    serializer_class = CategoriesSerializer
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('name',)
-    lookup_field = 'slug'
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
 
 
-class GenresViewSet(BaseViewSet):
+class GenreViewSet(CategoryGenreBaseViewSet):
     """Вьюсет для жанров."""
 
-    queryset = Genres.objects.all()
-    serializer_class = GenresSerializer
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('name',)
-    lookup_field = 'slug'
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
 
 
-class TitlesViewSet(
-    BaseViewSet,
+class TitleViewSet(
     mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin
+    mixins.UpdateModelMixin,
+    BaseViewSet
 ):
     """Вьюсет для произведений."""
 
@@ -56,9 +42,10 @@ class TitlesViewSet(
     http_method_names = ['get', 'post', 'delete', 'patch']
 
     def get_serializer_class(self):
-        if self.action in ['create', 'partial_update']:
+        if self.action in ['list', 'retrieve']:
+            return TitleViewSerializer
+        elif self.action in ['create', 'partial_update']:
             return TitlesCreateSerializer
-        return TitlesViewSerializer
 
     def get_object(self):
         title_id = self.kwargs['pk']

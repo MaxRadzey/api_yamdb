@@ -1,22 +1,19 @@
-from datetime import datetime
-
 from django.contrib.auth import get_user_model
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
-from reviews.constants import SYMBOL_LIMIT
-from .mixins import AuthorPubDateAbstractModel
-
+from reviews.constants import SYMBOL_LIMIT, NAME_MAX_LENGTH
+from reviews.mixins import (AuthorPubDateAbstractModel,
+                            GenreAndCategoryAbstractModel)
+from reviews.validators import validate_year
 
 User = get_user_model()
 
 
-class Categories(models.Model):
+class Category(GenreAndCategoryAbstractModel):
 
-    name = models.CharField('Название категории', max_length=256, unique=True)
-    slug = models.SlugField('Слаг категории', unique=True, max_length=50)
-
-    class Meta:
+    class Meta(GenreAndCategoryAbstractModel.Meta):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
@@ -24,12 +21,9 @@ class Categories(models.Model):
         return self.name[:SYMBOL_LIMIT]
 
 
-class Genres(models.Model):
+class Genre(GenreAndCategoryAbstractModel):
 
-    name = models.CharField('Название жанра', max_length=256, unique=True)
-    slug = models.SlugField('Слаг жанра', unique=True, max_length=50)
-
-    class Meta:
+    class Meta(GenreAndCategoryAbstractModel.Meta):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
@@ -39,24 +33,25 @@ class Genres(models.Model):
 
 class Title(models.Model):
 
-    name = models.CharField('Название произведения', max_length=256)
-    year = models.IntegerField(
+    name = models.CharField(
+        'Название произведения',
+        max_length=NAME_MAX_LENGTH
+    )
+    year = models.PositiveSmallIntegerField(
         'Дата выхода произведения',
-        validators=[
-            MaxValueValidator(datetime.now().year),
-            MinValueValidator(0)
-        ]
+        validators=[validate_year]
     )
     description = models.TextField('Описание произведения', blank=True)
-    genre = models.ManyToManyField(Genres, verbose_name='Жанр')
+    genre = models.ManyToManyField(Genre, verbose_name='Жанр')
     category = models.ForeignKey(
-        Categories, on_delete=models.CASCADE,
+        Category, on_delete=models.CASCADE,
         verbose_name='Категория'
     )
 
     class Meta:
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
+        ordering = ('name',)
 
     def __str__(self):
         return self.name[:SYMBOL_LIMIT]

@@ -1,45 +1,37 @@
 from datetime import datetime
-import re
 
 from rest_framework import serializers
 from rest_framework.validators import ValidationError
 from django.contrib.auth import get_user_model
 
-from reviews.models import Categories, Genres, Title, Review, Comments
+from reviews.models import Category, Genre, Title, Review, Comments
 
 
 User = get_user_model()
 
 
-class CategoriesSerializer(serializers.ModelSerializer):
+class CategorySerializer(serializers.ModelSerializer):
     """Сериализатор для категорий."""
+
     class Meta:
         fields = ('name', 'slug')
-        model = Categories
-
-    def validate_slug(self, value):
-        reg_slug = '^[-a-zA-Z0-9_]+$'
-        if re.match(reg_slug, value):
-            return value
+        model = Category
 
 
-class GenresSerializer(serializers.ModelSerializer):
+class GenreSerializer(serializers.ModelSerializer):
     """Сериализатор для жанров."""
+
     class Meta:
         fields = ('name', 'slug')
-        model = Genres
-
-    def validate_slug(self, value):
-        reg_slug = '^[-a-zA-Z0-9_]+$'
-        if re.match(reg_slug, value):
-            return value
+        model = Genre
 
 
-class TitlesViewSerializer(serializers.ModelSerializer):
+class TitleViewSerializer(serializers.ModelSerializer):
     """Сериализатор для просмотра произведений."""
+
     rating = serializers.IntegerField(read_only=True,)
-    genre = GenresSerializer(many=True, read_only=True,)
-    category = CategoriesSerializer(read_only=True,)
+    genre = GenreSerializer(many=True, read_only=True)
+    category = CategorySerializer(read_only=True)
 
     class Meta:
         fields = (
@@ -51,15 +43,17 @@ class TitlesViewSerializer(serializers.ModelSerializer):
 
 class TitlesCreateSerializer(serializers.ModelSerializer):
     """Сериализатор для создание произведений."""
+
     genre = serializers.SlugRelatedField(
         many=True,
-        queryset=Genres.objects.all(),
+        queryset=Genre.objects.all(),
         slug_field='slug'
     )
     category = serializers.SlugRelatedField(
-        queryset=Categories.objects.all(),
+        queryset=Category.objects.all(),
         slug_field='slug'
     )
+    year = serializers.IntegerField()
 
     class Meta:
         fields = (
@@ -68,12 +62,15 @@ class TitlesCreateSerializer(serializers.ModelSerializer):
         )
         model = Title
 
-        def validate_year(self, value):
-            if value < 0 and value > datetime.now().year:
-                raise ValidationError(
-                    'Укажите верную дату.'
-                )
-            return value
+    def validate_year(self, value):
+        if value < 0 or value > datetime.now().year:
+            raise ValidationError(
+                'Укажите верную дату.'
+            )
+        return value
+
+    def to_representation(self, instance):
+        return TitleViewSerializer(instance).data
 
 
 class ReviewsSerializer(serializers.ModelSerializer):
@@ -88,12 +85,6 @@ class ReviewsSerializer(serializers.ModelSerializer):
         fields = ('id', 'text', 'author', 'score', 'pub_date')
         read_only_fields = ('pub_date',)
         model = Review
-        # validators = [
-        #     serializers.UniqueTogetherValidator(
-        #         queryset=Review.objects.all(),
-        #         fields=('author', 'title')
-        #     )
-        # ]
 
 
 class CommentsSerializer(serializers.ModelSerializer):

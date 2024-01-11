@@ -7,7 +7,7 @@
 - [Как запустить проект](#Как-запустить-проект)
 - [Примеры запросов к API](#Примеры-запросов-к-API)
 
-##  Описание
+##  Авторы
 
 - [Maxim Radzey](https://github.com/MaxRadzey)
 - [Alexey Danilin](https://github.com/LeSick)

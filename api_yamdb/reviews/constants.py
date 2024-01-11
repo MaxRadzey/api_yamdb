@@ -1,1 +1,2 @@
-SYMBOL_LIMIT = 20  # Ограничение на количество символов
+SYMBOL_LIMIT = 20
+NAME_MAX_LENGTH = 256

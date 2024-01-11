@@ -3,7 +3,7 @@ import os
 
 from django.core.management.base import BaseCommand
 
-from reviews.models import Categories, Genres, Title, Review, Comments, User
+from reviews.models import Category, Genre, Title, Review, Comments, User
 
 
 class Command(BaseCommand):
@@ -16,8 +16,8 @@ class Command(BaseCommand):
         absolute_path = os.path.abspath(relative_path)  # Путь к папке с файлам
 
         CSV_DATA_AND_MODELS = (
-            ('category.csv', {}, Categories),
-            ('genre.csv', {}, Genres),
+            ('category.csv', {}, Category),
+            ('genre.csv', {}, Genre),
             ('users.csv', {}, User),
             ('titles.csv', {'category': 'category_id'}, Title),
             (
