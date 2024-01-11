@@ -5,7 +5,7 @@ from api.views import (
     CategoryViewSet,
     GenreViewSet,
     TitleViewSet,
-    ReviewsViewSet,
+    ReviewViewSet,
     CommentsViewSet
 )
 from users.views import UserView
@@ -18,7 +18,7 @@ router_v1.register(
 )
 router_v1.register(
     r'^titles/(?P<title_id>\d+)/reviews',
-    ReviewsViewSet,
+    ReviewViewSet,
     basename='reviews'
 )
 router_v1.register(

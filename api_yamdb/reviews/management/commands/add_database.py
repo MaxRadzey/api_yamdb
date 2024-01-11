@@ -22,7 +22,7 @@ class Command(BaseCommand):
             ('titles.csv', {'category': 'category_id'}, Title),
             (
                 'genre_title.csv',
-                {'genre_id': 'genres_id'},
+                {},
                 Title.genre.through
             ),
             ('review.csv', {'author': 'author_id'}, Review),

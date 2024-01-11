@@ -1,11 +1,10 @@
 from datetime import datetime
 
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.validators import ValidationError
-from django.contrib.auth import get_user_model
 
-from reviews.models import Category, Genre, Title, Review, Comments
-
+from reviews.models import Category, Comments, Genre, Review, Title
 
 User = get_user_model()
 
@@ -29,7 +28,7 @@ class GenreSerializer(serializers.ModelSerializer):
 class TitleViewSerializer(serializers.ModelSerializer):
     """Сериализатор для просмотра произведений."""
 
-    rating = serializers.IntegerField(read_only=True,)
+    rating = serializers.IntegerField(read_only=True)
     genre = GenreSerializer(many=True, read_only=True)
     category = CategorySerializer(read_only=True)
 
@@ -73,7 +72,8 @@ class TitlesCreateSerializer(serializers.ModelSerializer):
         return TitleViewSerializer(instance).data
 
 
-class ReviewsSerializer(serializers.ModelSerializer):
+class ReviewSerializer(serializers.ModelSerializer):
+
     """Сериализатор для отзывов."""
     author = serializers.SlugRelatedField(
         default=serializers.CurrentUserDefault(),
@@ -88,6 +88,7 @@ class ReviewsSerializer(serializers.ModelSerializer):
 
 
 class CommentsSerializer(serializers.ModelSerializer):
+
     """Сериализатор для комментариев."""
     author = serializers.StringRelatedField(
         read_only=True, default=serializers.CurrentUserDefault()

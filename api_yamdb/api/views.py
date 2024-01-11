@@ -6,7 +6,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from api.serializers import (
     CategorySerializer, GenreSerializer,
     TitleViewSerializer, CommentsSerializer,
-    ReviewsSerializer, TitlesCreateSerializer
+    ReviewSerializer, TitlesCreateSerializer
 )
 from reviews.models import Category, Genre, Title, Review
 from api.permissions import IsAuthorOrAdminOrModerator
@@ -55,9 +55,10 @@ class TitleViewSet(
         return title
 
 
-class ReviewsViewSet(viewsets.ModelViewSet):
+class ReviewViewSet(viewsets.ModelViewSet):
     """Вьюсет для отзывов."""
-    serializer_class = ReviewsSerializer
+
+    serializer_class = ReviewSerializer
     pagination_class = LimitOffsetPagination
     http_method_names = ['get', 'post', 'delete', 'patch']
     permission_classes = (IsAuthorOrAdminOrModerator,)
@@ -83,6 +84,7 @@ class ReviewsViewSet(viewsets.ModelViewSet):
 
 class CommentsViewSet(viewsets.ModelViewSet):
     """Вьюсет для комментариев."""
+
     serializer_class = CommentsSerializer
     pagination_class = LimitOffsetPagination
     http_method_names = ['get', 'post', 'delete', 'patch']

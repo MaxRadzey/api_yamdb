@@ -1,31 +1,28 @@
 from http import HTTPStatus
 
+from api.permissions import IsAdmin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
-from rest_framework import views, filters, viewsets, status
+from rest_framework import filters, status, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.utils import send_confirmation_email
-from .serializers import (
-    CreateUserSerializer,
-    SignUpSerializer,
-    TokenSerializer,
-    CurrentUserSerializer
-)
-from api.permissions import IsAdmin
+from users.serializers import (CreateUserSerializer, CurrentUserSerializer,
+                               SignUpSerializer, TokenSerializer)
 
 User = get_user_model()
 
 
 class UserView(viewsets.ModelViewSet):
     """Создание и редактирование пользователя администратором."""
+
     queryset = User.objects.all()
     serializer_class = CreateUserSerializer
-    permission_classes = [IsAdmin,]
+    permission_classes = (IsAdmin,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
     http_method_names = ['get', 'post', 'head', 'delete', 'patch']
@@ -63,8 +60,9 @@ class UserView(viewsets.ModelViewSet):
 
 class SignUpView(views.APIView):
     """Самостоятельная регистрация нового пользователя."""
+
     serializer_class = SignUpSerializer
-    permission_classes = [AllowAny,]
+    permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
@@ -86,8 +84,9 @@ class SignUpView(views.APIView):
 
 
 class TokenView(views.APIView):
+
     serializer_class = TokenSerializer
-    permission_classes = [AllowAny,]
+    permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)

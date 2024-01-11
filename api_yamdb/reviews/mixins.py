@@ -1,5 +1,5 @@
-from django.db import models
 from django.contrib.auth import get_user_model
+from django.db import models
 
 from reviews.constants import NAME_MAX_LENGTH
 
@@ -7,6 +7,7 @@ User = get_user_model()
 
 
 class AuthorPubDateAbstractModel(models.Model):
+
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, verbose_name='Автор'
     )
