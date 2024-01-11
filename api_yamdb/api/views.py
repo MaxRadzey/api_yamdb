@@ -1,7 +1,6 @@
 from rest_framework import viewsets, filters, mixins, serializers
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from rest_framework import serializers
 from django.db import models
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -71,7 +70,7 @@ class TitlesViewSet(
         title_id = self.kwargs['pk']
         title = Title.objects.filter(pk=title_id).annotate(
             rating=models.Avg('reviews__score')
-        )
+        ).first()
         return title
 
 
