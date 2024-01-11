@@ -1,6 +1,5 @@
 from rest_framework import viewsets, filters, mixins, serializers
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django.db import models
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -10,7 +9,7 @@ from api.serializers import (
     ReviewsSerializer, TitlesCreateSerializer
 )
 from reviews.models import Categories, Genres, Title, Review
-from api.permissions import IsAdmin, IsAuthorOrAdminOrModerator
+from api.permissions import IsAuthorOrAdminOrModerator, IsAdminOrReadOnly
 from .filters import TitlesFilter
 from .utils import get_title, get_review
 
@@ -21,12 +20,7 @@ class BaseViewSet(mixins.DestroyModelMixin,
                   viewsets.GenericViewSet):
     """Базовый вьюсет."""
 
-    def get_permissions(self):
-        if self.request.method in ['POST', 'DELETE', 'PUT', 'PATCH']:
-            self.permission_classes = [IsAdmin]
-        else:
-            self.permission_classes = [IsAuthenticatedOrReadOnly]
-        return super(BaseViewSet, self).get_permissions()
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class CategoriesViewSet(BaseViewSet):
