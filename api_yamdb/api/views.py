@@ -2,7 +2,7 @@ from rest_framework import viewsets, filters, mixins, serializers
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework import serializers
-from django.db import models
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 
 from api.serializers import (
@@ -10,7 +10,7 @@ from api.serializers import (
     TitlesViewSerializer, CommentsSerializer,
     ReviewsSerializer, TitlesCreateSerializer
 )
-from reviews.models import Categories, Genres, Title, Review
+from reviews.models import Categories, Genres, Title, Comments, Review
 from api.permissions import IsAdmin, IsAuthorOrAdminOrModerator
 from .filters import TitlesFilter
 from .utils import get_title, get_review
@@ -22,12 +22,7 @@ class BaseViewSet(mixins.DestroyModelMixin,
                   viewsets.GenericViewSet):
     """Базовый вьюсет."""
 
-    def get_permissions(self):
-        if self.request.method in ['POST', 'DELETE', 'PUT', 'PATCH']:
-            self.permission_classes = [IsAdmin]
-        else:
-            self.permission_classes = [IsAuthenticatedOrReadOnly]
-        return super(BaseViewSet, self).get_permissions()
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class CategoriesViewSet(BaseViewSet):
@@ -66,13 +61,6 @@ class TitlesViewSet(
         if self.action in ['create', 'partial_update']:
             return TitlesCreateSerializer
         return TitlesViewSerializer
-
-    def get_object(self):
-        title_id = self.kwargs['pk']
-        title = Title.objects.filter(pk=title_id).annotate(
-            rating=models.Avg('reviews__score')
-        )
-        return title
 
 
 class ReviewsViewSet(viewsets.ModelViewSet):

@@ -1,8 +1,10 @@
-from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
 from http import HTTPStatus
-from rest_framework import views, generics, filters, viewsets
-from rest_framework.exceptions import AuthenticationFailed
+
+from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
+from django.shortcuts import get_object_or_404
+from rest_framework import views, filters, viewsets, status
+from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -23,76 +25,59 @@ class UserView(viewsets.ModelViewSet):
     """Создание и редактирование пользователя администратором."""
     queryset = User.objects.all()
     serializer_class = CreateUserSerializer
-    permission_classes = [IsAdmin, ]
+    permission_classes = [IsAdmin,]
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
     http_method_names = ['get', 'post', 'head', 'delete', 'patch']
+    lookup_field = 'username'
 
-    def get_object(self):
-        """Поиск пользователя по username"""
-        username = self.kwargs.get('pk')
-        return get_object_or_404(User, username=username)
+    @action(
+        detail=False,
+        methods=['get', 'patch'],
+        permission_classes=[IsAuthenticatedOrReadOnly,]
+    )
+    def me(self, request):
+        if not request.user.is_authenticated:
+            return Response(
+                {"detail": "Вы не авторизованы."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
-
-class CurrentUserView(generics.RetrieveUpdateAPIView):
-    """ Профиль текущего пользователя.
-    Разрешение методов 'GET' и 'PATCH' для авторизованных пользователей.
-    """
-    serializer_class = CurrentUserSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly, ]
-
-    def get_object(self):
-        if not self.request.user.is_authenticated:
-            raise AuthenticationFailed("Вы не авторизованы.")
-        return get_object_or_404(
-            User,
-            username=self.request.user.username
-        )
+        if request.method.lower() == 'get':
+            serializer = CurrentUserSerializer(request.user)
+            return Response(serializer.data)
+        elif request.method.lower() == 'patch':
+            serializer = CurrentUserSerializer(
+                request.user,
+                data=request.data,
+                partial=True
+            )
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class SignUpView(views.APIView):
     """Самостоятельная регистрация нового пользователя."""
     serializer_class = SignUpSerializer
-    permission_classes = [AllowAny, ]
+    permission_classes = [AllowAny,]
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            username = serializer.validated_data['username']
-            email = serializer.validated_data['email']
-            user = User.objects.filter(email=email).first()
-            if user:
-                if user.username != username:
-                    return Response(
-                        {'detail': 'Такой email уже зарегистрирован'},
-                        status=HTTPStatus.BAD_REQUEST
-                    )
-                send_confirmation_email(user)
-                return Response(
-                    {
-                        'username': user.username,
-                        'email': user.email
-                    },
-                    status=HTTPStatus.OK
-                )
-            elif User.objects.filter(username=username).exists():
-                return Response(
-                    {'detail': 'Такой username уже зарегистрирован'},
-                    status=HTTPStatus.BAD_REQUEST
-                )
-            else:
-                user = User.objects.create(
-                    username=username,
-                    email=email
-                )
-                send_confirmation_email(user)
-                return Response(
-                    {
-                        'username': user.username,
-                        'email': user.email
-                    },
-                    status=HTTPStatus.OK
-                )
+            user, _ = User.objects.get_or_create(**serializer.validated_data)
+            send_confirmation_email(user)
+            return Response(
+                {
+                    'username': user.username,
+                    'email': user.email,
+                },
+                status=HTTPStatus.OK
+            )
         else:
             return Response(
                 serializer.errors,
@@ -102,7 +87,7 @@ class SignUpView(views.APIView):
 
 class TokenView(views.APIView):
     serializer_class = TokenSerializer
-    permission_classes = [AllowAny, ]
+    permission_classes = [AllowAny,]
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
@@ -111,7 +96,7 @@ class TokenView(views.APIView):
         confirmation_code = serializer.validated_data['confirmation_code']
         user = get_object_or_404(User, username=username)
 
-        if user.confirmation_code != confirmation_code:
+        if not default_token_generator.check_token(user, confirmation_code):
             return Response(
                 {'detail': 'Неверный код подтверждения'},
                 status=HTTPStatus.BAD_REQUEST
