@@ -3,8 +3,8 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from reviews.constants import NAME_MAX_LENGTH, SYMBOL_LIMIT
-from reviews.mixins import (AuthorPubDateAbstractModel,
-                            GenreAndCategoryAbstractModel)
+from reviews.base_models import (AuthorPubDateAbstractModel,
+                                 GenreAndCategoryAbstractModel)
 from reviews.validators import validate_year
 
 User = get_user_model()
@@ -16,18 +16,12 @@ class Category(GenreAndCategoryAbstractModel):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
-    def __str__(self):
-        return self.name[:SYMBOL_LIMIT]
-
 
 class Genre(GenreAndCategoryAbstractModel):
 
     class Meta(GenreAndCategoryAbstractModel.Meta):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
-
-    def __str__(self):
-        return self.name[:SYMBOL_LIMIT]
 
 
 class Title(models.Model):
