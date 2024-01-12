@@ -8,6 +8,11 @@ from django.utils.http import urlsafe_base64_encode
 from reviews.models import Review, Title
 
 
+def calculate_rating(data):
+    """Функция для вычисления рейтинга произведения"""
+    return None
+
+
 def send_confirmation_email(user):
     """Функция для отправки письма с кодом подтверждения"""
     token = default_token_generator.make_token(user)

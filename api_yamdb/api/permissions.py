@@ -2,10 +2,6 @@ from rest_framework import permissions
 
 from users.constants import ADMIN, MODERATOR
 
-from users.constants import ADMIN, MODERATOR
-
-from users.constants import ADMIN, MODERATOR
-
 
 class IsAdmin(permissions.BasePermission):
 

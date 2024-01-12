@@ -1,10 +1,11 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
-from .constants import USER, ROLE_CHOICES, ADMIN
+from users.constants import USER, ROLE_CHOICES, ADMIN
 
 
 class DBUserManager(BaseUserManager):
+
     def create_user(
             self,
             username,

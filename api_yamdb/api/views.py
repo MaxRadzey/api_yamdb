@@ -1,8 +1,7 @@
-from rest_framework import viewsets, filters, mixins, serializers
+from rest_framework import viewsets, mixins
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from rest_framework import serializers
-from django.shortcuts import get_object_or_404
+
+from django.db import models
 from django_filters.rest_framework import DjangoFilterBackend
 
 from api.serializers import (
@@ -10,7 +9,7 @@ from api.serializers import (
     TitleViewSerializer, CommentsSerializer,
     ReviewSerializer, TitlesCreateSerializer
 )
-from reviews.models import Category, Genre, Title, Review
+from reviews.models import Category, Genre, Title
 from api.permissions import IsAuthorOrAdminOrModerator
 from api.filters import TitlesFilter
 from api.mixins import BaseViewSet, CategoryGenreBaseViewSet
@@ -38,7 +37,6 @@ class TitleViewSet(
 ):
     """Вьюсет для произведений."""
 
-    queryset = Title.objects.all()
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitlesFilter
     http_method_names = ['get', 'post', 'delete', 'patch']
@@ -46,12 +44,18 @@ class TitleViewSet(
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
             return TitleViewSerializer
-        elif self.action in ['create', 'partial_update']:
-            return TitlesCreateSerializer
+        return TitlesCreateSerializer
+
+    def get_queryset(self):
+        titles = Title.objects.annotate(
+            rating=models.Avg('reviews__score')
+        )
+        return titles
 
 
-class ReviewsViewSet(viewsets.ModelViewSet):
+class ReviewViewSet(viewsets.ModelViewSet):
     """Вьюсет для отзывов."""
+
     serializer_class = ReviewSerializer
     pagination_class = LimitOffsetPagination
     http_method_names = ['get', 'post', 'delete', 'patch']
@@ -63,21 +67,10 @@ class ReviewsViewSet(viewsets.ModelViewSet):
         review = title.reviews.all()
         return review
 
-    def perform_create(self, serializer):
-        """Cоздание отзыва."""
-        title = get_title(self.kwargs)
-        if Review.objects.filter(
-            author=self.request.user, title=title
-        ).exists():
-
-            raise serializers.ValidationError(
-                'You have already reviewed this title.'
-            )
-        serializer.save(author=self.request.user, title=title)
-
 
 class CommentsViewSet(viewsets.ModelViewSet):
     """Вьюсет для комментариев."""
+
     serializer_class = CommentsSerializer
     pagination_class = LimitOffsetPagination
     http_method_names = ['get', 'post', 'delete', 'patch']
