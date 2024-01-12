@@ -2,10 +2,10 @@ from django.urls import include, path
 from rest_framework import routers
 
 from api.views import (
-    CategoriesViewSet,
-    GenresViewSet,
-    TitlesViewSet,
-    ReviewsViewSet,
+    CategoryViewSet,
+    GenreViewSet,
+    TitleViewSet,
+    ReviewViewSet,
     CommentsViewSet
 )
 from users.views import UserView
@@ -18,22 +18,22 @@ router_v1.register(
 )
 router_v1.register(
     r'^titles/(?P<title_id>\d+)/reviews',
-    ReviewsViewSet,
+    ReviewViewSet,
     basename='reviews'
 )
 router_v1.register(
     r'categories',
-    CategoriesViewSet,
+    CategoryViewSet,
     basename='categories'
 )
 router_v1.register(
     r'genres',
-    GenresViewSet,
+    GenreViewSet,
     basename='genres'
 )
 router_v1.register(
     'titles',
-    TitlesViewSet,
+    TitleViewSet,
     basename='titles'
 )
 router_v1.register(

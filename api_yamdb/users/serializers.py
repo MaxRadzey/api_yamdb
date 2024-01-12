@@ -3,13 +3,14 @@ from django.core.validators import MaxLengthValidator, RegexValidator
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from .validators import validate_username
-from .constants import EMAIL_MAX_LENGTH, USERNAME_MAX_LENGTH
+from users.validators import validate_username
+from users.constants import EMAIL_MAX_LENGTH, USERNAME_MAX_LENGTH
 
 User = get_user_model()
 
 
 class CreateUserSerializer(serializers.ModelSerializer):
+
     email = serializers.EmailField(
         required=True,
         validators=[
@@ -39,6 +40,7 @@ class CreateUserSerializer(serializers.ModelSerializer):
 
 
 class SignUpSerializer(serializers.ModelSerializer):
+
     username = serializers.CharField(
         required=True,
         validators=[
@@ -83,11 +85,13 @@ class SignUpSerializer(serializers.ModelSerializer):
 
 
 class TokenSerializer(serializers.Serializer):
+
     username = serializers.CharField(required=True)
     confirmation_code = serializers.CharField(required=True)
 
 
 class CurrentUserSerializer(serializers.ModelSerializer):
+
     class Meta:
         model = User
         fields = (
