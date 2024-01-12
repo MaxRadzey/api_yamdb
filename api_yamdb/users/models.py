@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
-from .constants import USER, ROLE_CHOICES, ADMIN
+from .constants import USER, ROLE_CHOICES, ADMIN, MODERATOR
 
 
 class DBUserManager(BaseUserManager):
@@ -54,3 +54,7 @@ class DBUser(AbstractUser):
             or self.is_superuser
             or self.is_staff
         )
+
+    @property
+    def is_moderator(self):
+        return self.role == MODERATOR
