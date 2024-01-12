@@ -1,7 +1,5 @@
 from rest_framework import permissions
 
-from users.constants import ADMIN, MODERATOR
-
 
 class IsAdmin(permissions.BasePermission):
 
@@ -19,8 +17,8 @@ class IsAuthorOrAdminOrModerator(permissions.IsAuthenticatedOrReadOnly):
             return request.method in permissions.SAFE_METHODS
         return (
             request.user == obj.author
-            or request.user.role == MODERATOR
-            or request.user.role == ADMIN
+            or request.user.is_moderator
+            or request.user.is_admin
         )
 
 
