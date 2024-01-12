@@ -42,7 +42,7 @@ class SignUpSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         required=True,
         validators=[
-            MaxLengthValidator(150),
+            MaxLengthValidator(USERNAME_MAX_LENGTH),
             RegexValidator(
                 regex=r'^[\w.@+-]+\Z',
                 message='Неверный формат адреса.'
@@ -53,7 +53,7 @@ class SignUpSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
         required=True,
         validators=[
-            MaxLengthValidator(254)
+            MaxLengthValidator(EMAIL_MAX_LENGTH)
         ]
     )
 

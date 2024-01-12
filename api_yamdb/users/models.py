@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
-from .constants import USER, ROLE_CHOICES, ADMIN, MODERATOR
+from .constants import USER, ROLE_CHOICES, ADMIN, MODERATOR, ROLE_MAX_LENGTH
 
 
 class DBUserManager(BaseUserManager):
@@ -45,7 +45,11 @@ class DBUser(AbstractUser):
 
     objects = DBUserManager()
     bio = models.TextField(blank=True)
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default=USER)
+    role = models.CharField(
+        max_length=ROLE_MAX_LENGTH,
+        choices=ROLE_CHOICES,
+        default=USER,
+    )
 
     @property
     def is_admin(self):
