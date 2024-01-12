@@ -3,13 +3,12 @@ from http import HTTPStatus
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
-from rest_framework import views, filters, viewsets, status
+from rest_framework import views, filters, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from api.utils import send_confirmation_email
 from .serializers import (
     CreateUserSerializer,
     SignUpSerializer,
@@ -17,6 +16,7 @@ from .serializers import (
     CurrentUserSerializer
 )
 from api.permissions import IsAdmin
+from api.utils import send_confirmation_email
 
 User = get_user_model()
 
@@ -34,31 +34,23 @@ class UserView(viewsets.ModelViewSet):
     @action(
         detail=False,
         methods=['get', 'patch'],
-        permission_classes=[IsAuthenticatedOrReadOnly,]
+        permission_classes=[IsAuthenticated,]
     )
     def me(self, request):
-        if not request.user.is_authenticated:
-            return Response(
-                {"detail": "Вы не авторизованы."},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
+        """Получение и редактирование данных текущего пользователя."""
 
         if request.method.lower() == 'get':
             serializer = CurrentUserSerializer(request.user)
             return Response(serializer.data)
-        elif request.method.lower() == 'patch':
+        else:
             serializer = CurrentUserSerializer(
                 request.user,
                 data=request.data,
                 partial=True
             )
-            if serializer.is_valid():
+            if serializer.is_valid(raise_exception=True):
                 serializer.save()
                 return Response(serializer.data)
-            return Response(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST
-            )
 
 
 class SignUpView(views.APIView):
@@ -68,7 +60,7 @@ class SignUpView(views.APIView):
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
+        if serializer.is_valid(raise_exception=True):
             user, _ = User.objects.get_or_create(**serializer.validated_data)
             send_confirmation_email(user)
             return Response(
@@ -77,11 +69,6 @@ class SignUpView(views.APIView):
                     'email': user.email,
                 },
                 status=HTTPStatus.OK
-            )
-        else:
-            return Response(
-                serializer.errors,
-                status=HTTPStatus.BAD_REQUEST
             )
 
 
