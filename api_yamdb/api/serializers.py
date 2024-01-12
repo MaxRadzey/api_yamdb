@@ -11,7 +11,7 @@ from reviews.models import Categories, Genres, Title, Review, Comments
 User = get_user_model()
 
 
-class CategoriesSerializer(serializers.ModelSerializer):
+class CategorySerializer(serializers.ModelSerializer):
     """Сериализатор для категорий."""
     class Meta:
         fields = ('name', 'slug')
@@ -23,7 +23,7 @@ class CategoriesSerializer(serializers.ModelSerializer):
             return value
 
 
-class GenresSerializer(serializers.ModelSerializer):
+class GenreSerializer(serializers.ModelSerializer):
     """Сериализатор для жанров."""
     class Meta:
         fields = ('name', 'slug')
@@ -35,7 +35,7 @@ class GenresSerializer(serializers.ModelSerializer):
             return value
 
 
-class TitlesViewSerializer(serializers.ModelSerializer):
+class TitleViewSerializer(serializers.ModelSerializer):
     """Сериализатор для просмотра произведений."""
     rating = serializers.IntegerField(read_only=True,)
     genre = GenresSerializer(many=True, read_only=True,)
@@ -76,7 +76,7 @@ class TitlesCreateSerializer(serializers.ModelSerializer):
             return value
 
 
-class ReviewsSerializer(serializers.ModelSerializer):
+class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор для отзывов."""
     author = serializers.SlugRelatedField(
         default=serializers.CurrentUserDefault(),
