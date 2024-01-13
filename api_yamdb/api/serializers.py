@@ -85,18 +85,18 @@ class ReviewSerializer(serializers.ModelSerializer):
         fields = ('id', 'text', 'author', 'score', 'pub_date')
         model = Review
 
-        def validate(self, data):
-            """Проверка на уникальность отзыва."""
-            if not self.instance:
-                title_id = self.context['view'].kwargs.get('title_id')
-                if Review.objects.filter(
-                    title_id=title_id,
-                    author=self.context['request'].user
-                ).exists():
-                    raise serializers.ValidationError(
-                        'Вы уже оставили отзыв на это произведение.'
-                    )
-            return data
+    def validate(self, data):
+        """Проверка на уникальность отзыва."""
+        if not self.instance:
+            title_id = self.context['view'].kwargs.get('title_id')
+            if Review.objects.filter(
+                title_id=title_id,
+                author=self.context['request'].user
+            ).exists():
+                raise serializers.ValidationError(
+                    'Вы уже оставили отзыв на это произведение.'
+                )
+        return data
 
 
 class CommentsSerializer(serializers.ModelSerializer):

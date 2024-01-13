@@ -67,6 +67,11 @@ class ReviewViewSet(viewsets.ModelViewSet):
         review = title.reviews.all()
         return review
 
+    def perform_create(self, serializer):
+        """Cоздание отзыва."""
+        title = get_title(self.kwargs)
+        serializer.save(author=self.request.user, title=title)
+
 
 class CommentsViewSet(viewsets.ModelViewSet):
     """Вьюсет для комментариев."""
