@@ -1,4 +1,4 @@
-from rest_framework import viewsets, mixins, serializers
+from rest_framework import viewsets, mixins
 from rest_framework.pagination import LimitOffsetPagination
 from django.db import models
 from django_filters.rest_framework import DjangoFilterBackend
@@ -8,7 +8,7 @@ from api.serializers import (
     TitleViewSerializer, CommentsSerializer,
     ReviewSerializer, TitlesCreateSerializer
 )
-from reviews.models import Category, Genre, Title, Review
+from reviews.models import Category, Genre, Title
 from api.permissions import IsAuthorOrAdminOrModerator
 from api.filters import TitlesFilter
 from api.mixins import BaseViewSet, CategoryGenreBaseViewSet
@@ -65,20 +65,15 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Получение всех отзывов или конкретного отзыва."""
+
         title = get_title(self.kwargs)
         review = title.reviews.all()
         return review
 
     def perform_create(self, serializer):
         """Cоздание отзыва."""
-        title = get_title(self.kwargs)
-        if Review.objects.filter(
-            author=self.request.user, title=title
-        ).exists():
 
-            raise serializers.ValidationError(
-                'You have already reviewed this title.'
-            )
+        title = get_title(self.kwargs)
         serializer.save(author=self.request.user, title=title)
 
 
@@ -92,11 +87,13 @@ class CommentsViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Получение всех комментариев или конкретного комментария."""
+
         review = get_review(self.kwargs)
         comment = review.comments.all()
         return comment
 
     def perform_create(self, serializer):
         """Создание комментариев."""
+
         review = get_review(self.kwargs)
         serializer.save(author=self.request.user, review=review)

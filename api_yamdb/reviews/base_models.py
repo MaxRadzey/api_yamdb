@@ -19,6 +19,9 @@ class AuthorPubDateAbstractModel(models.Model):
         abstract = True
         ordering = ('pub_date',)
 
+    def __str__(self):
+        return self.text[:SYMBOL_LIMIT]
+
 
 class GenreAndCategoryAbstractModel(models.Model):
     """Абстрактная модель."""
