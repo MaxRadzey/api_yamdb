@@ -38,15 +38,14 @@ class UserView(viewsets.ModelViewSet):
         if request.method.lower() == 'get':
             serializer = CurrentUserSerializer(request.user)
             return Response(serializer.data)
-        else:
-            serializer = CurrentUserSerializer(
-                request.user,
-                data=request.data,
-                partial=True
-            )
-            if serializer.is_valid(raise_exception=True):
-                serializer.save()
-                return Response(serializer.data)
+        serializer = CurrentUserSerializer(
+            request.user,
+            data=request.data,
+            partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
 
 class SignUpView(views.APIView):
@@ -57,16 +56,16 @@ class SignUpView(views.APIView):
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            user, _ = User.objects.get_or_create(**serializer.validated_data)
-            send_confirmation_email(user)
-            return Response(
-                {
-                    'username': user.username,
-                    'email': user.email,
-                },
-                status=HTTPStatus.OK
-            )
+        serializer.is_valid(raise_exception=True)
+        user, _ = User.objects.get_or_create(**serializer.validated_data)
+        send_confirmation_email(user)
+        return Response(
+            {
+                'username': user.username,
+                'email': user.email,
+            },
+            status=HTTPStatus.OK
+        )
 
 
 class TokenView(views.APIView):

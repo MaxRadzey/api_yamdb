@@ -28,7 +28,7 @@ class GenreSerializer(serializers.ModelSerializer):
 class TitleViewSerializer(serializers.ModelSerializer):
     """Сериализатор для просмотра произведений."""
 
-    rating = serializers.IntegerField(read_only=True)
+    rating = serializers.IntegerField(read_only=True, default=None)
     genre = GenreSerializer(many=True, read_only=True)
     category = CategorySerializer(read_only=True)
 
@@ -111,4 +111,3 @@ class CommentsSerializer(serializers.ModelSerializer):
     class Meta():
         model = Comments
         fields = ['id', 'text', 'author', 'pub_date']
-        read_only_fields = ('author',)
