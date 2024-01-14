@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from reviews.constants import MAX_CATEGORIES_DISPLAY
 from reviews.models import Category, Genre, Title, Comments, Review
 
 
@@ -24,7 +25,9 @@ class TitleAdmin(admin.ModelAdmin):
     )
 
     def display_genre(self, obj):
-        return ', '.join([genre.name for genre in obj.genre.all()[:3]])
+        return ', '.join(
+            [genre.name for genre in obj.genre.all()[:MAX_CATEGORIES_DISPLAY]]
+        )
 
 
 @admin.register(Comments)

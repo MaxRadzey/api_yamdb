@@ -34,7 +34,6 @@ class TitleViewSet(
 ):
     """Вьюсет для произведений."""
 
-    queryset = Title.objects.all()
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitlesFilter
     http_method_names = ['get', 'post', 'delete', 'patch']
@@ -42,15 +41,13 @@ class TitleViewSet(
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
             return TitleViewSerializer
-        elif self.action in ['create', 'partial_update']:
-            return TitlesCreateSerializer
+        return TitlesCreateSerializer
 
-    def get_object(self):
-        title_id = self.kwargs['pk']
-        title = Title.objects.filter(pk=title_id).annotate(
+    def get_queryset(self):
+        titles = Title.objects.annotate(
             rating=models.Avg('reviews__score')
-        ).first()
-        return title
+        )
+        return titles
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
