@@ -79,6 +79,7 @@ class Review(AuthorPubDateAbstractModel):
 
 
 class Comments(AuthorPubDateAbstractModel):
+
     text = models.TextField('Текст комментария',)
     review = models.ForeignKey(
         Review,

@@ -9,7 +9,7 @@ class BaseViewSet(mixins.DestroyModelMixin,
                   viewsets.GenericViewSet):
     """Базовый вьюсет."""
 
-    permission_classes = [IsAdminOrReadOnly]
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class CategoryGenreBaseViewSet(BaseViewSet):

@@ -1,18 +1,16 @@
-from rest_framework import viewsets, mixins
-from rest_framework.pagination import LimitOffsetPagination
+from api.utils import get_review, get_title
 from django.db import models
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import mixins, viewsets
+from rest_framework.pagination import LimitOffsetPagination
 
-from api.serializers import (
-    CategorySerializer, GenreSerializer,
-    TitleViewSerializer, CommentsSerializer,
-    ReviewSerializer, TitlesCreateSerializer
-)
-from reviews.models import Category, Genre, Title
-from api.permissions import IsAuthorOrAdminOrModerator
 from api.filters import TitlesFilter
 from api.mixins import BaseViewSet, CategoryGenreBaseViewSet
-from api.utils import get_title, get_review
+from api.permissions import IsAuthorOrAdminOrModerator
+from api.serializers import (CategorySerializer, CommentsSerializer,
+                             GenreSerializer, ReviewSerializer,
+                             TitlesCreateSerializer, TitleViewSerializer)
+from reviews.models import Category, Genre, Title
 
 
 class CategoryViewSet(CategoryGenreBaseViewSet):
@@ -65,14 +63,12 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Получение всех отзывов или конкретного отзыва."""
-
         title = get_title(self.kwargs)
         review = title.reviews.all()
         return review
 
     def perform_create(self, serializer):
         """Cоздание отзыва."""
-
         title = get_title(self.kwargs)
         serializer.save(author=self.request.user, title=title)
 
@@ -87,13 +83,11 @@ class CommentsViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Получение всех комментариев или конкретного комментария."""
-
         review = get_review(self.kwargs)
         comment = review.comments.all()
         return comment
 
     def perform_create(self, serializer):
         """Создание комментариев."""
-
         review = get_review(self.kwargs)
         serializer.save(author=self.request.user, review=review)
