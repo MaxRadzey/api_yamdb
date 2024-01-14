@@ -3,8 +3,8 @@ from django.core.validators import MaxLengthValidator, RegexValidator
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from users.validators import validate_username
 from users.constants import EMAIL_MAX_LENGTH, USERNAME_MAX_LENGTH
+from users.validators import validate_username
 
 User = get_user_model()
 
@@ -44,7 +44,7 @@ class SignUpSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         required=True,
         validators=[
-            MaxLengthValidator(150),
+            MaxLengthValidator(USERNAME_MAX_LENGTH),
             RegexValidator(
                 regex=r'^[\w.@+-]+\Z',
                 message='Неверный формат адреса.'
@@ -55,7 +55,7 @@ class SignUpSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(
         required=True,
         validators=[
-            MaxLengthValidator(254)
+            MaxLengthValidator(EMAIL_MAX_LENGTH)
         ]
     )
 

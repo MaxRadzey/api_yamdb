@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
-from reviews.constants import NAME_MAX_LENGTH
+from reviews.constants import NAME_MAX_LENGTH, SYMBOL_LIMIT
 
 User = get_user_model()
 
@@ -19,6 +19,9 @@ class AuthorPubDateAbstractModel(models.Model):
         abstract = True
         ordering = ('pub_date',)
 
+    def __str__(self):
+        return self.text[:SYMBOL_LIMIT]
+
 
 class GenreAndCategoryAbstractModel(models.Model):
     """Абстрактная модель."""
@@ -33,3 +36,6 @@ class GenreAndCategoryAbstractModel(models.Model):
     class Meta:
         abstract = True
         ordering = ('name',)
+
+    def __str__(self):
+        return self.name[:SYMBOL_LIMIT]

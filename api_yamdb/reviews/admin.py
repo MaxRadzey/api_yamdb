@@ -20,8 +20,11 @@ class GenreAdmin(admin.ModelAdmin):
 @admin.register(Title)
 class TitleAdmin(admin.ModelAdmin):
     list_display = (
-        'name', 'year', 'description', 'category'
+        'name', 'year', 'description', 'category', 'display_genre'
     )
+
+    def display_genre(self, obj):
+        return ', '.join([genre.name for genre in obj.genre.all()[:3]])
 
 
 @admin.register(Comments)

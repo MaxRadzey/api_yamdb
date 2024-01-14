@@ -3,8 +3,8 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from reviews.constants import NAME_MAX_LENGTH, SYMBOL_LIMIT
-from reviews.mixins import (AuthorPubDateAbstractModel,
-                            GenreAndCategoryAbstractModel)
+from reviews.base_models import (AuthorPubDateAbstractModel,
+                                 GenreAndCategoryAbstractModel)
 from reviews.validators import validate_year
 
 User = get_user_model()
@@ -16,18 +16,12 @@ class Category(GenreAndCategoryAbstractModel):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
-    def __str__(self):
-        return self.name[:SYMBOL_LIMIT]
-
 
 class Genre(GenreAndCategoryAbstractModel):
 
     class Meta(GenreAndCategoryAbstractModel.Meta):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
-
-    def __str__(self):
-        return self.name[:SYMBOL_LIMIT]
 
 
 class Title(models.Model):
@@ -77,6 +71,7 @@ class Review(AuthorPubDateAbstractModel):
     class Meta(AuthorPubDateAbstractModel.Meta):
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
+        default_related_name = 'reviews'
         constraints = (models.UniqueConstraint(
             fields=['author', 'title'], name='unique_review'
         ),
@@ -84,6 +79,7 @@ class Review(AuthorPubDateAbstractModel):
 
 
 class Comments(AuthorPubDateAbstractModel):
+
     text = models.TextField('Текст комментария',)
     review = models.ForeignKey(
         Review,
@@ -95,6 +91,4 @@ class Comments(AuthorPubDateAbstractModel):
     class Meta(AuthorPubDateAbstractModel.Meta):
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
-
-    def __str__(self):
-        return self.text[:SYMBOL_LIMIT]
+        default_related_name = 'comments'
