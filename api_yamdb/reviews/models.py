@@ -2,7 +2,8 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from reviews.constants import NAME_MAX_LENGTH, SYMBOL_LIMIT
+from reviews.constants import (NAME_MAX_LENGTH, SYMBOL_LIMIT,
+                               MAX_REVIEW_SCORE, MIN_REVIEW_SCOR)
 from reviews.base_models import (AuthorPubDateAbstractModel,
                                  GenreAndCategoryAbstractModel)
 from reviews.validators import validate_year
@@ -52,12 +53,15 @@ class Title(models.Model):
 
 class Review(AuthorPubDateAbstractModel):
 
-    text = models.TextField('Текст отзыва',)
     score = models.PositiveSmallIntegerField(
-        default=1,
+        default=MIN_REVIEW_SCOR,
         validators=[
-            MaxValueValidator(10, message='Оценка не должна быть больше 10!'),
-            MinValueValidator(1, message='Оценка не должна быть меньше 1!')
+            MaxValueValidator(
+                MAX_REVIEW_SCORE, message='Оценка не должна быть больше 10!'
+            ),
+            MinValueValidator(
+                MIN_REVIEW_SCOR, message='Оценка не должна быть меньше 1!'
+            )
         ]
     )
     title = models.ForeignKey(
@@ -80,7 +84,6 @@ class Review(AuthorPubDateAbstractModel):
 
 class Comments(AuthorPubDateAbstractModel):
 
-    text = models.TextField('Текст комментария',)
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
