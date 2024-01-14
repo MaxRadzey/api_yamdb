@@ -3,8 +3,8 @@ from django.core.validators import MaxLengthValidator, RegexValidator
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from users.validators import validate_username
 from users.constants import EMAIL_MAX_LENGTH, USERNAME_MAX_LENGTH
+from users.validators import validate_username
 
 User = get_user_model()
 

@@ -1,23 +1,18 @@
 from http import HTTPStatus
 
-from api.permissions import IsAdmin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
-from rest_framework import views, filters, viewsets
+from rest_framework import filters, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from users.serializers import (
-    CreateUserSerializer,
-    SignUpSerializer,
-    TokenSerializer,
-    CurrentUserSerializer
-)
 from api.permissions import IsAdmin
 from api.utils import send_confirmation_email
+from users.serializers import (CreateUserSerializer, CurrentUserSerializer,
+                               SignUpSerializer, TokenSerializer)
 
 User = get_user_model()
 
@@ -40,7 +35,6 @@ class UserView(viewsets.ModelViewSet):
     )
     def me(self, request):
         """Получение и редактирование данных текущего пользователя."""
-
         if request.method.lower() == 'get':
             serializer = CurrentUserSerializer(request.user)
             return Response(serializer.data)
