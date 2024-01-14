@@ -71,6 +71,7 @@ class Review(AuthorPubDateAbstractModel):
     class Meta(AuthorPubDateAbstractModel.Meta):
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
+        default_related_name = 'reviews'
         constraints = (models.UniqueConstraint(
             fields=['author', 'title'], name='unique_review'
         ),
@@ -89,6 +90,4 @@ class Comments(AuthorPubDateAbstractModel):
     class Meta(AuthorPubDateAbstractModel.Meta):
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
-
-    def __str__(self):
-        return self.text[:SYMBOL_LIMIT]
+        default_related_name = 'comments'
