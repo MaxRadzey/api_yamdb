@@ -31,7 +31,7 @@ class UserView(viewsets.ModelViewSet):
     @action(
         detail=False,
         methods=['get', 'patch'],
-        permission_classes=[IsAuthenticated,]
+        permission_classes=(IsAuthenticated,)
     )
     def me(self, request):
         """Получение и редактирование данных текущего пользователя."""
